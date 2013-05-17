@@ -82,4 +82,5 @@ describe 'WorthWatching' do
       movies.size.should_not == 0
     end
   end
+
 end
