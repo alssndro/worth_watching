@@ -6,10 +6,12 @@ require 'worth_watching/version'
 Gem::Specification.new do |spec|
   spec.name          = "worth_watching"
   spec.version       = WorthWatching::VERSION
-  spec.authors       = ["Alex M"]
-  spec.email         = ["TODO: Write your email address"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.authors       = ["Sandro"]
+  spec.email         = ["sandro@?.com"]
+  spec.description   = %q{Retrieve the ratings of a movie from IMDB, Rotten
+                          Tomatoes and Metacritic}
+  spec.summary       = %q{Retrieve the ratings of a movie from IMDB, Rotten
+                          Tomatoes and Metacritic}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +22,11 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "vcr"
+  spec.add_development_dependency "webmock"
+
+  spec.add_dependency "json"
+  spec.add_dependency "nokogiri"
+  spec.add_dependency "httparty"
 end
