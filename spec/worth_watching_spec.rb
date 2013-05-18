@@ -28,7 +28,6 @@ describe 'WorthWatching' do
       movie.rt_rating.should == 99
     end
 
-
     it "should have a link to RT page 'http://www.rottentomatoes.com/m/toy_story_3/'" do
       movie.rt_url.should == "http://www.rottentomatoes.com/m/toy_story_3/"
     end
@@ -68,18 +67,52 @@ describe 'WorthWatching' do
     it "should have poster url 'http://cf2.imgobject.com/t/p/original/b0qY6gl1nOeGNJpa9s0ansJrjrs.jpg'" do
       movie.poster.should == "http://cf2.imgobject.com/t/p/original/b0qY6gl1nOeGNJpa9s0ansJrjrs.jpg"
     end
+
+    describe "movie reviews" do
+      it "should have an author" do
+
+      end
+
+      it "should have a date" do
+        
+      end
+
+      it "should have rating" do
+        
+      end
+
+      it "should have a source" do
+        
+      end
+
+      it "should have a review quote" do
+        
+      end
+
+      it "should have a link to the review" do
+        
+      end
+    end
   end
 
   describe "Retrieve movies currently in cinemas" do
 
     let(:movies) do 
       VCR.use_cassette('in cinemas') do
-        aggregator.in_cinemas 
+        aggregator.in_cinemas(16) 
       end
     end
 
     it "should return a non-empty array of movies" do
       movies.size.should_not == 0
+    end
+
+    it "all movies should have a release date" do
+      movies.each {|movie| movie.release_date.should_not == nil}
+    end
+
+    it "all movies should have a poster url" do
+      movies.each {|movie| movie.poster.should_not == nil}
     end
   end
 
