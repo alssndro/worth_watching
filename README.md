@@ -1,6 +1,9 @@
 # WorthWatching
 
-TODO: Write a gem description
+WorthWatching is a gem that allows you to aggregate movie review data from a 
+number of different sources.
+
+Current supported sources are Rotten Tomatoes, IMDb and Metacritic.
 
 ## Installation
 
