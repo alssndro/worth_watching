@@ -19,12 +19,32 @@ Or install it yourself as:
 
     $ gem install worth_watching
 
-## Usage
+## Setup
 
 * Apply for the required API keys. You will need a [Rotten Tomatoes API Key](http://developer.rottentomatoes.com/)  and a [TMDB API key](http://docs.themoviedb.apiary.io/).
 
 * Fill in the details of your API keys in config/config.yml
- 
+
+## Usage
+
+  # Create a new aggregator
+  movie_aggregator = Aggregator.new
+  
+  # Search for movie by Rotten Tomatoes ID
+  toy_story_3 = movie_aggregator.movie_info(770672122)
+  
+  # We now have a Movie object and can access many attributes, including rating information
+  toy_story_3.title 
+  => "Toy Story 3"
+  
+  toy_story_3.rt_rating
+  => 99
+  
+  toy_story_3.imdb_rating
+  => 85
+  
+  toy_story_3.metacritic_rating
+  => 92
 
 ## Contributing
 
