@@ -7,8 +7,7 @@ module WorthWatching
                   :imdb_rating, :imdb_url, :metacritic_rating, :metacritic_url, 
                   :release_date, :poster, :rt_id, :imdb_id, :reviews
 
-    def initialize(movie_params)
-      
+    def initialize(movie_params)    
       @title = movie_params['title']
       @plot = movie_params['synopsis']
       @director = movie_params['abridged_directors'][0]['name']
@@ -18,7 +17,6 @@ module WorthWatching
       @cast = extract_cast(movie_params['abridged_cast'])
       @imdb_id = movie_params['alternate_ids']['imdb']
       @imdb_url = "http://www.imdb.com/title/tt#{imdb_id}/"
-
       @release_date = Date.parse(movie_params['release_dates']['theater'])
       @rt_id = movie_params['id']
     end
@@ -34,6 +32,5 @@ module WorthWatching
       end
       return cast_list
     end
-
   end
 end
