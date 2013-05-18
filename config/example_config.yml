@@ -1,6 +1,6 @@
 # Enter your API keys here and rename this file to config.yml
 
-# Rotten Tomatores API key
+# Rotten Tomatoes API key
 rt_api_key: enter key here
 
 # TMDB API key
