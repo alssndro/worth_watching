@@ -27,24 +27,24 @@ Or install it yourself as:
 
 ## Usage
 
-  # Create a new aggregator
-  movie_aggregator = Aggregator.new
-  
-  # Search for movie by Rotten Tomatoes ID
-  toy_story_3 = movie_aggregator.movie_info(770672122)
-  
-  # We now have a Movie object and can access many attributes, including rating information
-  toy_story_3.title 
-  => "Toy Story 3"
-  
-  toy_story_3.rt_rating
-  => 99
-  
-  toy_story_3.imdb_rating
-  => 85
-  
-  toy_story_3.metacritic_rating
-  => 92
+    # Create a new aggregator
+    movie_aggregator = Aggregator.new
+    
+    # Search for movie by Rotten Tomatoes ID
+    toy_story_3 = movie_aggregator.movie_info(770672122)
+    
+    # We now have a Movie object and can access many attributes, including rating information
+    toy_story_3.title 
+    => "Toy Story 3"
+    
+    toy_story_3.rt_rating
+    => 99
+    
+    toy_story_3.imdb_rating
+    => 85
+    
+    toy_story_3.metacritic_rating
+    => 92
 
 ## Contributing
 
