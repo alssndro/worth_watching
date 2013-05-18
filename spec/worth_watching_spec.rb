@@ -64,8 +64,8 @@ describe 'WorthWatching' do
       movie.genre.should == "Animation"
     end
 
-    it "should have poster url 'http://cf2.imgobject.com/t/p/original/b0qY6gl1nOeGNJpa9s0ansJrjrs.jpg'" do
-      movie.poster.should == "http://cf2.imgobject.com/t/p/original/b0qY6gl1nOeGNJpa9s0ansJrjrs.jpg"
+    it "should have the correct poster url" do
+      movie.poster.should == "http://cf2.imgobject.com/t/p/original/tOwAAVeL1p3ls9dhOBo45ElodU3.jpg"
     end
 
     describe "movie reviews" do
