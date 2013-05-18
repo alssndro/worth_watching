@@ -21,7 +21,10 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+* Apply for the required API keys. You will need a [Rotten Tomatoes API Key](http://developer.rottentomatoes.com/)  and a [TMDB API key](http://docs.themoviedb.apiary.io/).
+
+* Fill in the details of your API keys in config/config.yml
+ 
 
 ## Contributing
 
