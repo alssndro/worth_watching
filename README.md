@@ -47,6 +47,7 @@ toy_story_3.imdb_rating
 toy_story_3.metacritic_rating
 => 92
 
+
 # Get a short 5-film list of movies currently on release 
 recent_movies = movie_aggregator.in_cinemas(5)
 
