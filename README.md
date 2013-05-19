@@ -50,8 +50,16 @@ toy_story_3.metacritic_rating
 # Get a short 5-film list of movies currently on release 
 recent_movies = movie_aggregator.in_cinemas(5)
 
-recent_movies.first.title 
-=>"Iron Man 3"
+iron_man = recent_movies.first
+
+iron_man.title
+=> "Iron Man 3"
+
+critic_review = iron_man.reviews.first
+critic_review.quote
+=> "The trouble is that, as the plot quickens, any cleverness withdraws, to make 
+    way for the firecrackers of the climax. That is not Black's forte, and his 
+    movie duly slumps into a mess."
 ```
 
 ## Contributing
