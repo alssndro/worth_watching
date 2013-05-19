@@ -1,6 +1,5 @@
 require 'date'
 
-
 module WorthWatching
   class Movie
     attr_accessor :title, :plot, :director, :genre, :rt_rating, :rt_url, :cast,

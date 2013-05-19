@@ -8,9 +8,9 @@ Current supported sources are Rotten Tomatoes, IMDb and Metacritic.
 ## Installation
 
 Add this line to your application's Gemfile:
-
-    gem 'worth_watching'
-
+```ruby
+gem 'worth_watching'
+```
 And then execute:
 
     $ bundle
@@ -29,7 +29,7 @@ Or install it yourself as:
 
 ```ruby
 # Create a new aggregator
-movie_aggregator = Aggregator.new
+movie_aggregator = WorthWatching::Aggregator.new
 
 # Search for movie by Rotten Tomatoes ID
 toy_story_3 = movie_aggregator.movie_info('770672122')
@@ -46,6 +46,12 @@ toy_story_3.imdb_rating
 
 toy_story_3.metacritic_rating
 => 92
+
+# Get a short 5-film list of movies currently on release 
+recent_movies = movie_aggregator.in_cinemas(5)
+
+recent_movies.first.title 
+=>"Iron Man 3"
 ```
 
 ## Contributing

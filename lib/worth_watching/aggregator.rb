@@ -1,7 +1,6 @@
 require 'httparty'
 require 'nokogiri'
 require 'open-uri'
-require 'pry'
 
 module WorthWatching
   class Aggregator
@@ -22,14 +21,13 @@ module WorthWatching
     # @param rt_id [String] the Rotten Tomatoes ID of the movie
     # @return [Movie] a Movie object representing the movie
     def movie_info(rt_id)
-      puts "new movie"
-
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{rt_api_key}"
       movie_hash = HTTParty.get(uri)
       aggregate(Movie.new(movie_hash))
     end
 
     # Retrieve a list of movies that are currently in cinemas
+    # @param result_limit [Integer] the maximum number of results to return
     # @return [Array] an Array of Movie objects
     def in_cinemas(result_limit)
       uri = "#{RT_API_BASE_URL}/lists/movies/in_theaters.json?page_limit=#{result_limit}"\
@@ -121,8 +119,6 @@ module WorthWatching
         review_list << WrittenReview.new(review)
       end
 
-      #review_list.each { |review| puts review.to_s}
-      puts "getting reviews"
       return review_list
     end
 
