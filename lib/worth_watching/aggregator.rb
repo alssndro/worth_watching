@@ -48,8 +48,8 @@ module WorthWatching
 
     # Aggregates exta information about a movie that cannot be derived directly from the
     # Rotten Tomatoes API e.g IMDb/Metacritic rating, HQ posters
-    # @param movie [Movie] the movie aggregate information about
-    # @return [Movie] the updated Movie
+    # @param movie [Movie] the movie to aggregate information for
+    # @return [Movie] the movie passed in with aggregated info completed
     def aggregate(movie)
       extra_info = get_extra_info(movie.imdb_id)
 
@@ -79,7 +79,6 @@ module WorthWatching
       extra_info[:imdb_rating] = imdb_page.css('.votes strong').text
 
       # Extract Metacritic rating (IMDB has a page listing MC reviews)
-
       imdb_mc_page = Nokogiri::HTML(open("http://www.imdb.com/title/tt#{imdb_id}/criticreviews"))
 
       mc_rating = imdb_mc_page.css(".metascore > span").text
@@ -92,19 +91,20 @@ module WorthWatching
         extra_info[:metacritic_url] = "No URL" 
       end
       
-      extra_info
+      return extra_info
     end
 
     # Retrieves the URL of a high resolution poster of a movie
     # @params imdb_id [String] the IMDb ID of the required movie (without 'tt' prefixed)
-    # @params tmdb_api_key [String] TMDB api key required to use their poster API
     # @return [String] the URL of the poster as a string
     def get_poster(imdb_id)
       uri = "#{TMDB_API_BASE_URL}/movie/tt#{imdb_id}?api_key=#{tmdb_api_key}"
       movie_info = HTTParty.get(uri, :headers => { 'Accept' => 'application/json'})
 
       if movie_info.has_key?("poster_path") 
-      "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
+        "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
+      else
+      " No poster available"
       end
     end
 
@@ -112,7 +112,7 @@ module WorthWatching
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}/reviews.json?review_type=top_critic"\
             "&page_limit=5&page=1&country=uk&apikey=#{rt_api_key}"
       review_hash = HTTParty.get(uri)
-      #binding.pry
+    
       review_list = []
 
       review_hash["reviews"].each do |review| 
@@ -122,17 +122,15 @@ module WorthWatching
       return review_list
     end
 
-    # Checks that a given movie has enough information available via API. For example,
-    # if the Rotten Tomatoes API does not include the IMDb ID for a particular movie
-    # then we cannot retrieve its IMDb rating.
+    # Checks that a given movie has enough information available via API to aggregate
+    # data. It MUST have an IMDb id and a release date.
     # @param [Hash] the hash representation of the movie to check
-    # @return [Boolean] whether the movie has a theather release date and IMDb ID
+    # @return [Boolean] whether the movie has a theater release date and IMDb ID
     def enough_info?(movie)
 
       has_release_date = false
       has_imdb_id = false
 
-      # Check that if it has a release date that the theather release date is present
       if movie.has_key?("release_dates")
         if movie["release_dates"].has_key?("theater")
           has_release_date = !movie["release_dates"]["theater"].empty?
