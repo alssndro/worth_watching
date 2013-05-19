@@ -118,7 +118,7 @@ module WorthWatching
       review_hash["reviews"].each do |review| 
         review_list << WrittenReview.new(review)
       end
-
+      
       return review_list
     end
 

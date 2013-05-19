@@ -70,7 +70,7 @@ describe 'WorthWatching' do
 
     describe "movie reviews" do
       it "should have an author" do
-
+        puts movie.reviews.first.to_hash
       end
 
       it "should have a date" do

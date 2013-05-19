@@ -16,5 +16,10 @@ module WorthWatching
     def to_s
       "#{author} wrote on #{date} : #{quote}"
     end
+
+    def to_hash
+      hash = {author: author, date: date, rating: rating, source: source, 
+              quote: quote, link: link}
+    end
   end
 end
