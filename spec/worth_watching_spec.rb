@@ -70,7 +70,7 @@ describe 'WorthWatching' do
 
     describe "movie reviews" do
       it "should have an author" do
-        puts movie.reviews.first.to_hash
+        #puts movie.reviews.first.to_hash
       end
 
       it "should have a date" do
@@ -99,7 +99,7 @@ describe 'WorthWatching' do
 
     let(:movies) do 
       VCR.use_cassette('in cinemas') do
-        aggregator.in_cinemas(16) 
+        aggregator.in_cinemas(16, :cinema) 
       end
     end
 
@@ -112,8 +112,28 @@ describe 'WorthWatching' do
     end
 
     it "all movies should have a poster url" do
-      movies.each {|movie| movie.poster.should_not == nil}
+      movies.each {|movie| puts "#{movie.title} #{movie.rt_rating} | #{movie.imdb_rating} | #{movie.metacritic_rating}"; movie.poster.should_not == nil}
     end
   end
 
+  describe "Retrieve movies released on DVD" do
+
+    let(:movies) do 
+      VCR.use_cassette('in cinemas') do
+        aggregator.in_cinemas(16, :dvd) 
+      end
+    end
+
+    it "should return a non-empty array of movies" do
+      movies.size.should_not == 0
+    end
+
+    it "all movies should have a release date" do
+      movies.each {|movie| movie.release_date.should_not == nil}
+    end
+
+    it "all movies should have a poster url" do
+      movies.each {|movie| puts "#{movie.title} #{movie.rt_rating} | #{movie.imdb_rating} | #{movie.metacritic_rating}"; movie.poster.should_not == nil}
+    end
+  end
 end
