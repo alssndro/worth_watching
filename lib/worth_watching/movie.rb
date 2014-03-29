@@ -13,7 +13,7 @@ module WorthWatching
       @genre = movie_params['genres'][0]
       @rt_rating = movie_params['ratings']['critics_score']
       @rt_url = movie_params['links']['alternate']
-      @cast = extract_cast(movie_params['abridged_cast'])
+      @cast = build_cast_list(movie_params['abridged_cast'])
       @imdb_id = movie_params['alternate_ids']['imdb']
       @imdb_url = "http://www.imdb.com/title/tt#{imdb_id}/"
       @release_date = Date.parse(movie_params['release_dates']['theater'])
@@ -22,14 +22,14 @@ module WorthWatching
 
     private
 
-    def extract_cast(cast)
-      cast_list = ""
-      # Extract the first 4 actors, formatting with a comma when necessary
-      cast[0..3].each_with_index do |actor, i|
-        actor = (i < 3) ? "#{actor['name']}, " : "#{actor['name']}"
-        cast_list << actor
+    # Builds a cast list string from an array of actor names (up to 4 actors)
+    def build_cast_list(cast)
+      cast_list = cast[0..3].inject("") do |cast_list_string, actor, i|
+        cast_list_string << "#{actor["name"]}, "
       end
-      return cast_list
+
+      # Remove the trailing comma
+      cast_list.sub(/, \z/, "")
     end
   end
 end

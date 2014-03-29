@@ -23,9 +23,6 @@ module WorthWatching
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{rt_api_key}"
       movie_hash = HTTParty.get(uri)
 
-      puts movie_hash.nil?
-      puts uri
-
       aggregate(Movie.new(movie_hash))
     end
 
@@ -105,26 +102,25 @@ module WorthWatching
       return extra_info
     end
 
-    # TEMPORARY METHOD NAME. Horrible name, I know.
     def get_extra_info_via_omdb(imdb_id)
       extra_info = {}
-      omdb_response = HTTParty.get("http://www.omdbapi.com/?i=tt#{imdb_id}&r=xml")
+      omdb_response = HTTParty.get("http://www.omdbapi.com/?i=tt#{imdb_id}")
 
-      if omdb_response["root"]["response"] == "True"
-        imdb_rating = omdb_response["root"]["movie"]["imdbRating"]
-        movie_title = omdb_response["root"]["movie"]["title"]
+      if omdb_response["Response"] == "True"
+        imdb_rating = omdb_response["imdbRating"]
+        movie_title = omdb_response["Title"]
 
         # Extract Metacritic rating (IMDB has a page listing MC reviews)
         metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
                           "movie/#{CGI.escape(movie_title)}/results"))
-        mc_rating = metacritic_page.css('.first_result .metascore').text
+        mc_rating = metacritic_page.css('.first_result .metascore_w').text
         mc_link = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
       else
         imdb_rating = "Unavailable"
       end
 
       # Extract IMDB rating
-      extra_info[:imdb_rating] =imdb_rating
+      extra_info[:imdb_rating] = imdb_rating
 
       if mc_rating != ""
         extra_info[:metacritic_rating] = mc_rating
