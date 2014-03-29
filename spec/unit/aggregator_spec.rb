@@ -1,20 +1,17 @@
-#worth_watching_spec.rb
-require 'vcr_setup'
-require 'worth_watching'
+require 'test_helper'
 
-describe 'WorthWatching' do
+describe 'WorthWatching::Aggregator' do
 
-  let(:aggregator) {WorthWatching::Aggregator.new}
+  let(:aggregator) {WorthWatching::Aggregator.new("rt_api_key", "tmdb_api_key")}
 
   describe 'get individual movie info' do
 
-    let(:movie) do
-      VCR.use_cassette('toy story 3') do
-      aggregator.movie_info("770672122") 
-      end
+    before do
+      json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story.json")
+      stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/770672122\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response)
     end
 
-    let(:release_date)  { Date.new(2010, 06, 18) }
+    let(:movie) { aggregator.movie_info("770672122") }
 
     it "should have the title 'Toy Story 3" do
       movie.title.should == "Toy Story 3"
@@ -53,7 +50,7 @@ describe 'WorthWatching' do
     end
 
     it "should have release date '2010-06-18'" do
-      movie.release_date.should == release_date
+      movie.release_date.should == Date.new(2010, 06, 18)
     end
 
     it "should have director 'Lee Unkrich'" do
@@ -74,33 +71,31 @@ describe 'WorthWatching' do
       end
 
       it "should have a date" do
-        
+
       end
 
       it "should have rating" do
-        
+
       end
 
       it "should have a source" do
-        
+
       end
 
       it "should have a review quote" do
-        
+
       end
 
       it "should have a link to the review" do
-        
+
       end
     end
   end
 
   describe "Retrieve movies currently in cinemas" do
 
-    let(:movies) do 
-      VCR.use_cassette('in cinemas') do
-        aggregator.in_cinemas(16, :cinema) 
-      end
+    let(:movies) do
+      # stub aggregator.in_cinemas(16, :cinema)
     end
 
     it "should return a non-empty array of movies" do
@@ -113,15 +108,15 @@ describe 'WorthWatching' do
 
     it "all movies should have a poster url" do
       movies.each {|movie| puts "#{movie.title} #{movie.rt_rating} | #{movie.imdb_rating} | #{movie.metacritic_rating}"; movie.poster.should_not == nil}
+      puts "___________________________________________________"
     end
   end
 
   describe "Retrieve movies released on DVD" do
 
-    let(:movies) do 
-      VCR.use_cassette('in cinemas') do
-        aggregator.in_cinemas(16, :dvd) 
-      end
+    let(:movies) do
+      # stub
+      aggregator.in_cinemas(16, :dvd)
     end
 
     it "should return a non-empty array of movies" do

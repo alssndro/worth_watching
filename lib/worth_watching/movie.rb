@@ -3,10 +3,10 @@ require 'date'
 module WorthWatching
   class Movie
     attr_accessor :title, :plot, :director, :genre, :rt_rating, :rt_url, :cast,
-                  :imdb_rating, :imdb_url, :metacritic_rating, :metacritic_url, 
+                  :imdb_rating, :imdb_url, :metacritic_rating, :metacritic_url,
                   :release_date, :poster, :rt_id, :imdb_id, :reviews
 
-    def initialize(movie_params)    
+    def initialize(movie_params)
       @title = movie_params['title']
       @plot = movie_params['synopsis']
       @director = movie_params['abridged_directors'][0]['name']
@@ -25,7 +25,7 @@ module WorthWatching
     def extract_cast(cast)
       cast_list = ""
       # Extract the first 4 actors, formatting with a comma when necessary
-      cast[0..3].each_with_index do |actor, i| 
+      cast[0..3].each_with_index do |actor, i|
         actor = (i < 3) ? "#{actor['name']}, " : "#{actor['name']}"
         cast_list << actor
       end

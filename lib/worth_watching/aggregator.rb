@@ -9,12 +9,11 @@ module WorthWatching
 
     RT_API_BASE_URL = 'http://api.rottentomatoes.com/api/public/v1.0'
     TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
-  
+
     # Initialize a new Aggregator object to retrieve movie info
-    def initialize
-      config = YAML.load_file('config/config.yml')
-      @rt_api_key = config['rt_api_key']
-      @tmdb_api_key = config['tmdb_api_key']
+    def initialize(rt_api_key, tmdb_api_key)
+      @rt_api_key = rt_api_key
+      @tmdb_api_key = tmdb_api_key
     end
 
     # Retrieve the details of a specific movie using its IMDB ID
@@ -23,6 +22,10 @@ module WorthWatching
     def movie_info(rt_id)
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{rt_api_key}"
       movie_hash = HTTParty.get(uri)
+
+      puts movie_hash.nil?
+      puts uri
+
       aggregate(Movie.new(movie_hash))
     end
 
@@ -63,7 +66,7 @@ module WorthWatching
 
       movie.imdb_rating = extra_info[:imdb_rating]
       movie.metacritic_rating = extra_info[:metacritic_rating]
-      movie.metacritic_url = extra_info[:metacritic_url]    
+      movie.metacritic_url = extra_info[:metacritic_url]
 
       movie.poster = get_poster(movie.imdb_id)
       movie.reviews = get_reviews(movie.rt_id)
@@ -96,9 +99,9 @@ module WorthWatching
         extra_info[:metacritic_url] = imdb_mc_page.css(".see-more .offsite-link")[0]["href"]
       else
         extra_info[:metacritic_rating] = "No Rating"
-        extra_info[:metacritic_url] = "No URL" 
+        extra_info[:metacritic_url] = "No URL"
       end
-      
+
       return extra_info
     end
 
@@ -121,16 +124,16 @@ module WorthWatching
       end
 
       # Extract IMDB rating
-      extra_info[:imdb_rating] =imdb_rating     
+      extra_info[:imdb_rating] =imdb_rating
 
       if mc_rating != ""
         extra_info[:metacritic_rating] = mc_rating
         extra_info[:metacritic_url] = mc_link
       else
         extra_info[:metacritic_rating] = "Unavailable"
-        extra_info[:metacritic_url] = "No URL" 
+        extra_info[:metacritic_url] = "No URL"
       end
-      
+
       return extra_info
     end
 
@@ -143,7 +146,7 @@ module WorthWatching
       uri = "#{TMDB_API_BASE_URL}/movie/tt#{imdb_id}?api_key=#{tmdb_api_key}"
       movie_info = HTTParty.get(uri, :headers => { 'Accept' => 'application/json'})
 
-      if movie_info.has_key?("poster_path") 
+      if movie_info.has_key?("poster_path")
         "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
       else
         "No poster available"
@@ -154,10 +157,10 @@ module WorthWatching
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}/reviews.json?review_type=top_critic"\
             "&page_limit=5&page=1&country=uk&apikey=#{rt_api_key}"
       review_hash = HTTParty.get(uri)
-    
+
       review_list = []
 
-      review_hash["reviews"].each do |review| 
+      review_hash["reviews"].each do |review|
         review_list << WrittenReview.new(review)
       end
 
@@ -185,15 +188,14 @@ module WorthWatching
           has_imdb_id = !movie["alternate_ids"]["imdb"].empty?
         end
       end
-
-      return has_release_date && has_imdb_id 
+      return has_release_date && has_imdb_id
     end
 
     # Removes movies from an array that do no have the required rating information
     # @param movie_list [Array] the list to clean up
     # @return [Array] the pruned list of movies
     def self.clean_up(movie_list)
-      movie_list.delete_if do |movie| 
+      movie_list.delete_if do |movie|
         movie.metacritic_rating == "No Rating"
      end
     end
