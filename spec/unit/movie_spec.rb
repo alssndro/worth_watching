@@ -3,7 +3,7 @@ require 'json'
 
 describe "WorthWatching::Movie" do
   let(:movie) do
-    response_movie_hash = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story.json")
+    response_movie_hash = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_rt.json")
     WorthWatching::Movie.new(JSON.parse(response_movie_hash))
   end
 

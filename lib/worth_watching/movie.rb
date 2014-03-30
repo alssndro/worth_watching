@@ -7,6 +7,7 @@ module WorthWatching
                   :release_date, :poster, :rt_id, :imdb_id, :reviews
 
     def initialize(movie_params)
+
       @title = movie_params['title']
       @plot = movie_params['synopsis']
       @director = movie_params['abridged_directors'][0]['name']

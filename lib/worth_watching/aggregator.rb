@@ -1,11 +1,13 @@
-require 'httparty'
 require 'nokogiri'
 require 'open-uri'
+require 'typhoeus'
+require 'json'
 
 module WorthWatching
   class Aggregator
 
     attr_accessor :rt_api_key, :tmdb_api_key
+    attr_reader :movie
 
     RT_API_BASE_URL = 'http://api.rottentomatoes.com/api/public/v1.0'
     TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
@@ -19,11 +21,12 @@ module WorthWatching
     # Retrieve the details of a specific movie using its IMDB ID
     # @param rt_id [String] the Rotten Tomatoes ID of the movie
     # @return [Movie] a Movie object representing the movie
-    def movie_info(rt_id)
+    def aggregate_movie(rt_id)
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{rt_api_key}"
-      movie_hash = HTTParty.get(uri)
+      movie_hash = JSON.parse(Typhoeus.get(uri).body)
 
-      aggregate(Movie.new(movie_hash))
+      @movie = Movie.new(movie_hash)
+      aggregate
     end
 
     # Retrieve a list of movies that are currently in cinemas
@@ -39,130 +42,82 @@ module WorthWatching
           uri = "#{RT_API_BASE_URL}/lists/dvds/top_rentals.json?page_limit=#{result_limit}"\
                 "&page=1&country=uk&apikey=#{rt_api_key}"
       end
-
-      movie_list = HTTParty.get(uri)
-      movie_list = movie_list["movies"]
+      
+      response = JSON.parse(Typhoeus.get(uri).body)
+      movie_list = response["movies"]
       in_theaters = []
 
       movie_list.each do |movie|
         if enough_info?(movie)
-          movie = movie_info(movie['id'])
-          in_theaters << movie
+          in_theaters << movie_info(movie['id'])
         end
       end
       Aggregator.clean_up(in_theaters)
       return in_theaters
     end
 
+    private
+
     # Aggregates exta information about a movie that cannot be derived directly from the
     # Rotten Tomatoes API e.g IMDb/Metacritic rating, HQ posters
     # @param movie [Movie] the movie to aggregate information for
     # @return [Movie] the movie passed in with aggregated info completed
-    def aggregate(movie)
-      extra_info = get_extra_info_via_omdb(movie.imdb_id)
+    def aggregate
 
-      movie.imdb_rating = extra_info[:imdb_rating]
-      movie.metacritic_rating = extra_info[:metacritic_rating]
-      movie.metacritic_url = extra_info[:metacritic_url]
+      retrieve_imdb_info
+      retrieve_metacritic_info
+      get_poster
+      get_reviews
 
-      movie.poster = get_poster(movie.imdb_id)
-      movie.reviews = get_reviews(movie.rt_id)
-
-      return movie
+      return @movie
     end
 
-    private
-
-    # Retrieves extra info about a particular movie that cannot be found using
-    # the Rotten Tomatoes API. All facilitated by its IMDb ID.
-    # @params imdb_id [String] the IMDb ID of the required movie (without 'tt' prefixed)
-    # @return [Hash] a hash containing IMDb rating, Metacritic rating and movie URL
-    def get_extra_info(imdb_id)
-      imdb_url = "http://m.imdb.com/title/tt#{imdb_id}"
-
-      imdb_page = Nokogiri::HTML(open(imdb_url))
-      extra_info = {}
-
-      # Extract IMDB rating
-      extra_info[:imdb_rating] = imdb_page.css('.votes strong').text
-
-      # Extract Metacritic rating (IMDB has a page listing MC reviews)
-      imdb_mc_page = Nokogiri::HTML(open("http://www.imdb.com/title/tt#{imdb_id}/criticreviews"))
-
-      mc_rating = imdb_mc_page.css(".metascore > span").text
-
-      if mc_rating != ""
-        extra_info[:metacritic_rating] = mc_rating
-        extra_info[:metacritic_url] = imdb_mc_page.css(".see-more .offsite-link")[0]["href"]
-      else
-        extra_info[:metacritic_rating] = "No Rating"
-        extra_info[:metacritic_url] = "No URL"
-      end
-
-      return extra_info
-    end
-
-    def get_extra_info_via_omdb(imdb_id)
-      extra_info = {}
-      omdb_response = HTTParty.get("http://www.omdbapi.com/?i=tt#{imdb_id}")
+    def retrieve_imdb_info
+      omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}").body)
 
       if omdb_response["Response"] == "True"
-        imdb_rating = omdb_response["imdbRating"]
-        movie_title = omdb_response["Title"]
-
-        mc_info = scrape_metacritic_info(movie_title)
-
-        mc_rating = mc_info[:mc_rating]
-        mc_link = mc_info[:mc_url]
+        @movie.imdb_rating = omdb_response["imdbRating"]
       else
-        imdb_rating = "Unavailable"
+        @movie.imdb_rating = "Unavailable"
       end
-
-      # Extract IMDB rating
-      extra_info[:imdb_rating] = imdb_rating
-
-      if mc_rating != ""
-        extra_info[:metacritic_rating] = mc_rating
-        extra_info[:metacritic_url] = mc_link
-      else
-        extra_info[:metacritic_rating] = "Unavailable"
-        extra_info[:metacritic_url] = "No URL"
-      end
-
-      return extra_info
     end
 
-    # Scrapes the metacritic rating and URL, returning a hash containing the info
-    def scrape_metacritic_info(movie_title)
-      mc_info = {}
-
+    def retrieve_metacritic_info
       # Extract Metacritic rating (IMDB has a page listing MC reviews)
-        metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
-                          "movie/#{CGI.escape(movie_title)}/results"))
-        mc_info[:mc_rating] = metacritic_page.css('.first_result .metascore_w').text
-        mc_info[:mc_url] = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
+      metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
+                        "movie/#{CGI.escape(@movie.title)}/results"))
 
-        return mc_info
+      scraped_rating = metacritic_page.css('.first_result .metascore_w').text
+      metacritic_url = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
+      
+      # If attempt to scrape results in empty string, info must not be available
+      if scraped_rating == ""
+        scraped_rating = "No Rating"
+        metacritic_url = "No URL"
+      end
+
+      @movie.metacritic_rating = scraped_rating
+      @movie.metacritic_url = metacritic_url
     end
 
     # Retrieves the URL of a high resolution poster of a movie
     # @params imdb_id [String] the IMDb ID of the required movie (without 'tt' prefixed)
     # @return [String] the URL of the poster as a string
-    def get_poster(imdb_id)
-      uri = "#{TMDB_API_BASE_URL}/movie/tt#{imdb_id}?api_key=#{tmdb_api_key}"
-      movie_info = HTTParty.get(uri, :headers => { 'Accept' => 'application/json'})
+    def get_poster
+      uri = "#{TMDB_API_BASE_URL}/movie/tt#{@movie.imdb_id}?api_key=#{tmdb_api_key}"
+      movie_info = JSON.parse(Typhoeus.get(uri).body)
 
       if movie_info.has_key?("poster_path")
-        "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
+        @movie.poster = "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
       else
-        "No poster available"
+        @movie.poster = "No poster available"
       end
     end
 
-    def get_reviews(rt_id)
-      uri = "#{RT_API_BASE_URL}/movies/#{rt_id}/reviews.json?review_type=top_critic"\
+    def get_reviews
+      uri = "#{RT_API_BASE_URL}/movies/#{@movie.rt_id}/reviews.json?review_type=top_critic"\
             "&page_limit=5&page=1&country=uk&apikey=#{rt_api_key}"
-      review_hash = HTTParty.get(uri)
+      review_hash = JSON.parse(Typhoeus.get(uri).body)
 
       review_list = []
 
@@ -170,7 +125,7 @@ module WorthWatching
         review_list << WrittenReview.new(review)
       end
 
-      return review_list
+      @movie.reviews = review_list
     end
 
     # Checks that a given movie has enough information available via API to aggregate

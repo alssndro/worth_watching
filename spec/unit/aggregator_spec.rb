@@ -22,7 +22,9 @@ describe 'WorthWatching::Aggregator' do
       stub_request(:get, "http://www.metacritic.com/search/movie/Toy+Story+3/results").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
     end
 
-    let(:movie) { aggregator.movie_info("770672122") }
+    let(:movie) do 
+      aggregator.aggregate_movie("770672122") 
+    end
 
     it "should have rotten tomatoes rating 99'" do
       expect(movie.rt_rating).to eq(99)
