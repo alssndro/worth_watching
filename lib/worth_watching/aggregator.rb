@@ -110,11 +110,10 @@ module WorthWatching
         imdb_rating = omdb_response["imdbRating"]
         movie_title = omdb_response["Title"]
 
-        # Extract Metacritic rating (IMDB has a page listing MC reviews)
-        metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
-                          "movie/#{CGI.escape(movie_title)}/results"))
-        mc_rating = metacritic_page.css('.first_result .metascore_w').text
-        mc_link = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
+        mc_info = scrape_metacritic_info(movie_title)
+
+        mc_rating = mc_info[:mc_rating]
+        mc_link = mc_info[:mc_url]
       else
         imdb_rating = "Unavailable"
       end
@@ -133,7 +132,18 @@ module WorthWatching
       return extra_info
     end
 
+    # Scrapes the metacritic rating and URL, returning a hash containing the info
+    def scrape_metacritic_info(movie_title)
+      mc_info = {}
 
+      # Extract Metacritic rating (IMDB has a page listing MC reviews)
+        metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
+                          "movie/#{CGI.escape(movie_title)}/results"))
+        mc_info[:mc_rating] = metacritic_page.css('.first_result .metascore_w').text
+        mc_info[:mc_url] = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
+
+        return mc_info
+    end
 
     # Retrieves the URL of a high resolution poster of a movie
     # @params imdb_id [String] the IMDb ID of the required movie (without 'tt' prefixed)

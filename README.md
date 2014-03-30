@@ -29,7 +29,7 @@ Or install it yourself as:
 
 ```ruby
 # Create a new aggregator
-movie_aggregator = WorthWatching::Aggregator.new
+movie_aggregator = WorthWatching::Aggregator.new("rotten_tomatoes_api_key", "tmdb_api_key")
 
 # Search for movie by Rotten Tomatoes ID
 toy_story_3 = movie_aggregator.movie_info('770672122')
