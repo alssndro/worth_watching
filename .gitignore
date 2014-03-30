@@ -17,3 +17,4 @@ test/version_tmp
 tmp
 config/config.yml
 spec/vcr_cassettes/
+todo.txt

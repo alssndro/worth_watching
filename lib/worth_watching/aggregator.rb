@@ -33,7 +33,6 @@ module WorthWatching
     # @param result_limit [Integer] the maximum number of results to return
     # @return [Array] an Array of Movie objects
     def in_cinemas(result_limit, type)
-
       case type
         when :cinema
           uri = "#{RT_API_BASE_URL}/lists/movies/in_theaters.json?page_limit=#{result_limit}"\
@@ -56,6 +55,26 @@ module WorthWatching
       return in_theaters
     end
 
+    # Search for movies using a query string. Returns an array containing a hash
+    # represting each movie in the search results, or false if no results are found
+    # Returns a max of 4 results
+    def search_by_title(movie_title)
+      uri = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?apikey=#{@rt_api_key}&q=#{CGI.escape(movie_title)}&page_limit=4"
+
+      response = JSON.parse(Typhoeus.get(uri).body)
+
+      if response["total"] == 0
+        return false
+      else
+        # Build the array of movie serach results. We have to regexp the Rotten Tomatoes
+        # ID from the movie link since (frustratingly) the API does not return it directly.
+        return response["movies"].inject([]) do |movie_list, movie|
+          movie_list << { :title => movie["title"], :rt_id => movie["links"]["self"].match(/\/[0-9]+\./).to_s.gsub(/[\/\.]/, ""), :year => movie["year"].to_s }
+          movie_list
+        end
+      end
+    end
+
     private
 
     # Aggregates exta information about a movie that cannot be derived directly from the
@@ -63,12 +82,10 @@ module WorthWatching
     # @param movie [Movie] the movie to aggregate information for
     # @return [Movie] the movie passed in with aggregated info completed
     def aggregate
-
       retrieve_imdb_info
       retrieve_metacritic_info
       get_poster
       get_reviews
-
       return @movie
     end
 

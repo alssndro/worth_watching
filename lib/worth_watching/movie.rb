@@ -19,6 +19,18 @@ module WorthWatching
       @imdb_url = "http://www.imdb.com/title/tt#{imdb_id}/"
       @release_date = Date.parse(movie_params['release_dates']['theater'])
       @rt_id = movie_params['id']
+
+      @imdb_rating = "Not retrieved"
+      @metacritic_rating = "Not retrieved"
+    end
+
+    def summary
+      divider = "-" * 60
+      "#{@title}\n#{divider}\nReleased: #{@release_date.strftime("%d %b %Y")}\n#{divider}\n#{plot}\n#{divider}\nCast: #{@cast}\n#{divider}\n#{rating_summary}"
+    end
+
+    def rating_summary
+      "Rotten Tomatoes rating: #{rt_rating}\nIMDB rating: #{imdb_rating}\nMetacritic rating: #{metacritic_rating}\n"
     end
 
     private

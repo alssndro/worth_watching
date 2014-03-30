@@ -1,9 +1,14 @@
 # WorthWatching
 
-WorthWatching is a gem that allows you to aggregate movie review data from a 
+WorthWatching is a gem that allows you to aggregate movie review data from a
 number of different sources.
 
 Current supported sources are Rotten Tomatoes, IMDb and Metacritic.
+
+Note that the success of the aggregation process is entirely dependent on knowing
+the Rotten Tomatoes ID first. This is because, assuming we know the Rotten Tomato ID of a movie, we can get the IMDB ID of the same movie from the RT API, but we cannot find the Rotten Tomato movie ID from an IMDB ID.
+
+However, you can use `my_aggregator.search("movie title")` to first search for a movie by title. The search results include the Rotten Tomatoes ID, which you can then use aggregate movie info as usual with `aggregator.aggregate_movie("rt_id")`.
 
 ## Installation
 
@@ -31,13 +36,38 @@ Or install it yourself as:
 # Create a new aggregator
 movie_aggregator = WorthWatching::Aggregator.new("rotten_tomatoes_api_key", "tmdb_api_key")
 
-# Search for movie by Rotten Tomatoes ID
-toy_story_3 = movie_aggregator.movie_info('770672122')
+# Search for movies by title. Returns an array of hashes, each hash representing a movie in the search result
+movie_aggregator.search_by_title("the godfather")
+=> [{:title=>"The Godfather", :rt_id=>"12911", :year=>"1972"}, {:title=>"The Godfather, Part II", :rt_id=>"12926", :year=>"1974"}, {:title=>"The Godfather, Part III", :rt_id=>"13476", :year=>"1990"}, {:title=>"The Godfather of Green Bay", :rt_id=>"341816359", :year=>"2005"}]
+
+# To aggregate movie info, pass the movie's Rotten Tomato ID
+toy_story_3 = movie_aggregator.aggregate_movie('770672122')
 
 # We now have a Movie object and can access many attributes, including rating information
-toy_story_3.title 
+toy_story_3.title
 => "Toy Story 3"
 
+# Get a general summary
+puts toy_story_3.summary
+=> "Toy Story 3
+------------------------------------------------------------
+Released: 18 Jun 2010
+------------------------------------------------------------
+Pixar returns to their first success with Toy Story 3. The movie begins with Andy leaving for college and donating his beloved toys -- including Woody (Tom Hanks) and Buzz (Tim Allen) -- to a daycare. While the crew meets new friends, including Ken (Michael Keaton), they soon grow to hate their new surroundings and plan an escape. The film was directed by Lee Unkrich from a script co-authored by Little Miss Sunshine scribe Michael Arndt. ~ Perry Seibert, Rovi
+------------------------------------------------------------
+Cast: Tom Hanks, Tim Allen, Joan Cusack, Ned Beatty
+------------------------------------------------------------
+Rotten Tomatoes rating: 99
+IMDB rating: 8.5
+Metacritic rating: 92"
+
+# Get just the rating summary
+puts toy_story_3.rating_summary
+=> "Rotten Tomatoes rating: 99
+IMDB rating: 8.5
+Metacritic rating: 92"
+
+# Or individual ratings
 toy_story_3.rt_rating
 => 99
 
@@ -48,7 +78,7 @@ toy_story_3.metacritic_rating
 => 92
 
 
-# Get a short 5-film list of movies currently on release 
+# Get a short 5-film list of movies currently on release
 recent_movies = movie_aggregator.in_cinemas(5)
 
 iron_man = recent_movies.first
@@ -58,15 +88,7 @@ iron_man.title
 
 critic_review = iron_man.reviews.first
 critic_review.quote
-=> "The trouble is that, as the plot quickens, any cleverness withdraws, to make 
-    way for the firecrackers of the climax. That is not Black's forte, and his 
+=> "The trouble is that, as the plot quickens, any cleverness withdraws, to make
+    way for the firecrackers of the climax. That is not Black's forte, and his
     movie duly slumps into a mess."
 ```
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request

@@ -1,0 +1,1 @@
+{"total":0,"movies":[],"links":{"self":"http://api.rottentomatoes.com/api/public/v1.0/movies.json?q=amoveithatdoesnotexist&page_limit=3&page=1"},"link_template":"http://api.rottentomatoes.com/api/public/v1.0/movies.json?q={search-term}&page_limit={results-per-page}&page={page-number}"}
