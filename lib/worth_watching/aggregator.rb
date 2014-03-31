@@ -19,55 +19,58 @@ module WorthWatching
     end
 
     # Retrieve the details of a specific movie using its IMDB ID
+    #
     # @param rt_id [String] the Rotten Tomatoes ID of the movie
     # @return [Movie] a Movie object representing the movie
     def aggregate_movie(rt_id)
-      uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{rt_api_key}"
+      uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{@rt_api_key}"
       movie_hash = JSON.parse(Typhoeus.get(uri).body)
 
       @movie = Movie.new(movie_hash)
       aggregate
     end
 
-    # Retrieve a list of movies that are currently in cinemas
-    # @param result_limit [Integer] the maximum number of results to return
-    # @return [Array] an Array of Movie objects
-    def in_cinemas(result_limit, type)
-      case type
-        when :cinema
-          uri = "#{RT_API_BASE_URL}/lists/movies/in_theaters.json?page_limit=#{result_limit}"\
-                "&page=1&country=uk&apikey=#{rt_api_key}"
-        when :dvd
-          uri = "#{RT_API_BASE_URL}/lists/dvds/top_rentals.json?page_limit=#{result_limit}"\
-                "&page=1&country=uk&apikey=#{rt_api_key}"
+    # Retrieve a list of movies, then aggregate info for each one
+    #
+    # @param list_name[Symbol] the name of the Rotten Tomato list. Possible values: :box_office,
+    #   :in_theaters, :opening, :upcoming, :top_rentals, :current_releases, :new_releases, :upcoming_dvd
+    # @param country [Symbol] Localised data for the selected country (ISO 3166-1 alpha-2)
+    # @param result_limit [Integer] the max number of movies to return in the list
+    # @return [Array] an array of Movie objects
+    def aggregate_list(list_name, country, result_Limit)
+      case list_name
+        # Build the appropriate URI based on the list name.
+        when :box_office, :in_theaters, :opening, :upcoming
+          uri = "#{RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
+                "&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
+        when :top_rentals, :current_releases, :new_releases, :upcoming_dvd
+          # The API endpoint uses 'upcoming' for both DVD and cinema releases
+          # Need to avoid this clash by using ':upcoming_dvd' as possible method param,
+          # but change back when building the URI
+          list_name = :upcoming if list_name == :upcoming_dvd
+          uri = "#{RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
+                "&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
       end
-      
-      response = JSON.parse(Typhoeus.get(uri).body)
-      movie_list = response["movies"]
-      in_theaters = []
 
-      movie_list.each do |movie|
-        if enough_info?(movie)
-          in_theaters << movie_info(movie['id'])
-        end
-      end
-      Aggregator.clean_up(in_theaters)
-      return in_theaters
+      get_movie_list(uri)
     end
 
-    # Search for movies using a query string. Returns an array containing a hash
-    # represting each movie in the search results, or false if no results are found
-    # Returns a max of 4 results
-    def search_by_title(movie_title)
-      uri = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?apikey=#{@rt_api_key}&q=#{CGI.escape(movie_title)}&page_limit=4"
+    # Search for movies using a query string. Returns a max of 4 results
+    #
+    # @param movie_title [String] the title of the movie to search for
+    # @param result_limit [Integer] the max number of results to return
+    # @return [Array, false] an array containing hashes represting each movie in the search results, or
+    #   false if no results are found.
+    def search_by_title(movie_title, result_limit)
+      uri = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?apikey=#{@rt_api_key}&q=#{CGI.escape(movie_title)}&page_limit=#{result_limit}"
 
       response = JSON.parse(Typhoeus.get(uri).body)
 
       if response["total"] == 0
         return false
       else
-        # Build the array of movie serach results. We have to regexp the Rotten Tomatoes
-        # ID from the movie link since (frustratingly) the API does not return it directly.
+        # Build the array of movie serach results. Have to use a regexp to extract the Rotten Tomatoes
+        # ID from the movie link since the API does not return it directly.
         return response["movies"].inject([]) do |movie_list, movie|
           movie_list << { :title => movie["title"], :rt_id => movie["links"]["self"].match(/\/[0-9]+\./).to_s.gsub(/[\/\.]/, ""), :year => movie["year"].to_s }
           movie_list
@@ -77,10 +80,10 @@ module WorthWatching
 
     private
 
-    # Aggregates exta information about a movie that cannot be derived directly from the
+    # Aggregates extra info about @movie that cannot be derived directly from the
     # Rotten Tomatoes API e.g IMDb/Metacritic rating, HQ posters
-    # @param movie [Movie] the movie to aggregate information for
-    # @return [Movie] the movie passed in with aggregated info completed
+    #
+    # @return [Movie] the movie with aggregated info completed
     def aggregate
       retrieve_imdb_info
       retrieve_metacritic_info
@@ -89,6 +92,7 @@ module WorthWatching
       return @movie
     end
 
+    # Retrieves and updates the current movie's IMDb rating
     def retrieve_imdb_info
       omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}").body)
 
@@ -99,8 +103,8 @@ module WorthWatching
       end
     end
 
+    # Retrieves and updates the current movie's Metacritic rating and URL
     def retrieve_metacritic_info
-      # Extract Metacritic rating (IMDB has a page listing MC reviews)
       metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
                         "movie/#{CGI.escape(@movie.title)}/results"))
 
@@ -117,9 +121,7 @@ module WorthWatching
       @movie.metacritic_url = metacritic_url
     end
 
-    # Retrieves the URL of a high resolution poster of a movie
-    # @params imdb_id [String] the IMDb ID of the required movie (without 'tt' prefixed)
-    # @return [String] the URL of the poster as a string
+    # Updates the current movie's high resolution poster URL
     def get_poster
       uri = "#{TMDB_API_BASE_URL}/movie/tt#{@movie.imdb_id}?api_key=#{tmdb_api_key}"
       movie_info = JSON.parse(Typhoeus.get(uri).body)
@@ -131,9 +133,10 @@ module WorthWatching
       end
     end
 
+    # Retrieves and updates the current movie's reviews
     def get_reviews
       uri = "#{RT_API_BASE_URL}/movies/#{@movie.rt_id}/reviews.json?review_type=top_critic"\
-            "&page_limit=5&page=1&country=uk&apikey=#{rt_api_key}"
+            "&page_limit=5&page=1&country=uk&apikey=#{@rt_api_key}"
       review_hash = JSON.parse(Typhoeus.get(uri).body)
 
       review_list = []
@@ -147,6 +150,7 @@ module WorthWatching
 
     # Checks that a given movie has enough information available via API to aggregate
     # data. It MUST have an IMDb id and a release date.
+    #
     # @param [Hash] the hash representation of the movie to check
     # @return [Boolean] whether the movie has a theater release date and IMDb ID
     def enough_info?(movie)
@@ -169,7 +173,26 @@ module WorthWatching
       return has_release_date && has_imdb_id
     end
 
+    # Retrieves a list of movies from the Rotten Tomatoes API, then aggregates the
+    # info for each one, return an array of Movie objects
+    #
+    # @param uri [String] the Rotten Tomatoes API endpoint for the list
+    # @return [Array] an array of Movie objects
+    def get_movie_list(uri)
+      response = JSON.parse(Typhoeus.get(uri).body)
+      movie_list_response = response["movies"]
+      puts movie_list_response.length
+      movie_list = movie_list_response.inject([]) do |list, movie|
+        list << aggregate_movie(movie['id']) if enough_info?(movie)
+        list
+      end
+
+      Aggregator.clean_up(movie_list)
+      return movie_list
+    end
+
     # Removes movies from an array that do no have the required rating information
+    #
     # @param movie_list [Array] the list to clean up
     # @return [Array] the pruned list of movies
     def self.clean_up(movie_list)

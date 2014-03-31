@@ -6,7 +6,7 @@ number of different sources.
 Current supported sources are Rotten Tomatoes, IMDb and Metacritic.
 
 Note that the success of the aggregation process is entirely dependent on knowing
-the Rotten Tomatoes ID first. This is because, assuming we know the Rotten Tomato ID of a movie, we can get the IMDB ID of the same movie from the RT API, but we cannot find the Rotten Tomato movie ID from an IMDB ID.
+the Rotten Tomatoes ID first. This is because, assuming we know the Rotten Tomatoes ID of a movie, we can get the IMDB ID of the same movie from the RT API, but we cannot find the Rotten Tomato movie ID from an IMDB ID.
 
 However, you can use `my_aggregator.search("movie title")` to first search for a movie by title. The search results include the Rotten Tomatoes ID, which you can then use aggregate movie info as usual with `aggregator.aggregate_movie("rt_id")`.
 
@@ -26,7 +26,7 @@ Or install it yourself as:
 
 ## Setup
 
-* Apply for the required API keys. You will need a [Rotten Tomatoes API Key](http://developer.rottentomatoes.com/)  and a [TMDB API key](http://docs.themoviedb.apiary.io/).
+* Apply for the required API keys. You will need a [Rotten Tomato API Key](http://developer.rottentomatoes.com/)  and a [TMDB API key](http://docs.themoviedb.apiary.io/).
 
 * Fill in the details of your API keys in config/config.yml
 
@@ -34,14 +34,15 @@ Or install it yourself as:
 
 ```ruby
 # Create a new aggregator
-movie_aggregator = WorthWatching::Aggregator.new("rotten_tomatoes_api_key", "tmdb_api_key")
+movie_aggregator = WorthWatching::Aggregator.new("rotten_tomato_api_key", "tmdb_api_key")
 
 # Search for movies by title. Returns an array of hashes, each hash representing a movie in the search result
+# Note that it returns the Rotten Tomato ID for each movie, which is vital to aggregation
 movie_aggregator.search_by_title("the godfather")
 => [{:title=>"The Godfather", :rt_id=>"12911", :year=>"1972"}, {:title=>"The Godfather, Part II", :rt_id=>"12926", :year=>"1974"}, {:title=>"The Godfather, Part III", :rt_id=>"13476", :year=>"1990"}, {:title=>"The Godfather of Green Bay", :rt_id=>"341816359", :year=>"2005"}]
 
-# To aggregate movie info, pass the movie's Rotten Tomato ID
-toy_story_3 = movie_aggregator.aggregate_movie('770672122')
+# To aggregate movie info, pass the movie's Rotten Tomatoes ID
+toy_story_3 = movie_aggregator.aggregate_movie("770672122")
 
 # We now have a Movie object and can access many attributes, including rating information
 toy_story_3.title
@@ -72,15 +73,20 @@ toy_story_3.rt_rating
 => 99
 
 toy_story_3.imdb_rating
-=> 85
+=> 8.5
 
 toy_story_3.metacritic_rating
 => 92
 
 
-# Get a short 5-film list of movies currently on release
-recent_movies = movie_aggregator.in_cinemas(5)
+# You can also retrieve multiple movies based on a common list, such as the latest 4 releases
+# in cinemas/theaters, or DVD. 
+recent_movies = movie_aggregator.latest_releases(:cinema, 4)
 
+# Or the top 6 releases in cinema/theater or on DVD
+top_movies = movie_aggregator.top_releases(:dvd, 6)
+
+# The above list-based methods return an array of Movie objects
 iron_man = recent_movies.first
 
 iron_man.title
