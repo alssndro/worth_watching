@@ -1,3 +1,5 @@
+![WorthWatching logo](logo.png)
+
 ## WorthWatching
 
 WorthWatching is a gem that aggregates movie review data from a
