@@ -22,8 +22,8 @@ describe 'WorthWatching::Aggregator' do
       stub_request(:get, "http://www.metacritic.com/search/movie/Toy+Story+3/results").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
     end
 
-    let(:movie) do 
-      aggregator.aggregate_movie("770672122") 
+    let(:movie) do
+      aggregator.aggregate_movie("770672122")
     end
 
     it "should have Rotten Tomato rating 99" do
@@ -61,7 +61,7 @@ describe 'WorthWatching::Aggregator' do
 
     describe "retrieving movie reviews" do
       let (:reviews) { movie.reviews }
-      
+
       it "should have an author" do
         expect(reviews.first).to be_an_instance_of(WorthWatching::WrittenReview)
       end
@@ -101,10 +101,10 @@ describe 'WorthWatching::Aggregator' do
     end
 
     context "when results exist for the given query string" do
-      let(:results) { aggregator.search_by_title("finding nemo") }
+      let(:results) { aggregator.search_by_title("finding nemo", 4) }
       describe "the search results" do
         it "is an array of movies" do
-          
+
           expect(results).to be_an_instance_of(Array)
         end
 
@@ -119,16 +119,16 @@ describe 'WorthWatching::Aggregator' do
         it "has the release year of the movie result" do
           expect(results.first[:year]).to eq("2003")
         end
-      end 
+      end
     end
 
     context "when results do not exist for the given query string" do
       describe "the search results" do
         it "returns false" do
-          results = aggregator.search_by_title("amoviethatdoesnotexist")
+          results = aggregator.search_by_title("amoviethatdoesnotexist", 4)
           expect(results).to be_false
         end
-      end 
+      end
     end
   end
 end

@@ -18,7 +18,7 @@ module WorthWatching
       @imdb_id = movie_params['alternate_ids']['imdb']
       @imdb_url = "http://www.imdb.com/title/tt#{imdb_id}/"
       @release_date = Date.parse(movie_params['release_dates']['theater'])
-      @rt_id = movie_params['id']
+      @rt_id = movie_params['id'].to_s
 
       @imdb_rating = "Not retrieved"
       @metacritic_rating = "Not retrieved"

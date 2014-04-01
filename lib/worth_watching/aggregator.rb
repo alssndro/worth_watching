@@ -39,11 +39,15 @@ module WorthWatching
     # @return [Array] an array of Movie objects
     def aggregate_list(list_name, country, result_limit)
       case list_name
+
         # Build the appropriate URI based on the list name.
+        # Some enpoints use 'limit' to specify max results to return, some use 'page_limit'.
+        # Pass both to make the code simpler
         when :box_office, :in_theaters, :opening, :upcoming
           uri = "#{RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
                 "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
         when :top_rentals, :current_releases, :new_releases, :upcoming_dvd
+
           # The API endpoint uses 'upcoming' for both DVD and cinema releases
           # Need to avoid this clash by using ':upcoming_dvd' as possible method param,
           # but change back when building the URI
@@ -51,7 +55,7 @@ module WorthWatching
           uri = "#{RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
                 "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
       end
-      puts uri
+
       get_movie_list(uri)
     end
 
@@ -110,7 +114,7 @@ module WorthWatching
 
       scraped_rating = metacritic_page.css('.first_result .metascore_w').text
       metacritic_url = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
-      
+
       # If attempt to scrape results in empty string, info must not be available
       if scraped_rating == ""
         scraped_rating = "No Rating"
