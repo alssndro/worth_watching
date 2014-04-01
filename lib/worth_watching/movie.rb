@@ -24,6 +24,9 @@ module WorthWatching
       @metacritic_rating = "Not retrieved"
     end
 
+    # Returns a summary of the movie based on its attributes
+    #
+    # @return [String] the summary
     def summary
       divider = "-" * 60
       "#{@title}\n#{divider}\nReleased: #{@release_date.strftime("%d %b %Y")}\n#{divider}\n#{plot}\n#{divider}\nCast: #{@cast}\n#{divider}\n#{rating_summary}"
@@ -36,6 +39,9 @@ module WorthWatching
     private
 
     # Builds a cast list string from an array of actor names (up to 4 actors)
+    #
+    # @param cast [Array] the array of actor names
+    # @return [String] a string of actor names separated by commas
     def build_cast_list(cast)
       cast_list = cast[0..3].inject("") do |cast_list_string, actor, i|
         cast_list_string << "#{actor["name"]}, "

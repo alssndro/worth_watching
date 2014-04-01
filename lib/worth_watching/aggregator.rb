@@ -37,21 +37,21 @@ module WorthWatching
     # @param country [Symbol] Localised data for the selected country (ISO 3166-1 alpha-2)
     # @param result_limit [Integer] the max number of movies to return in the list
     # @return [Array] an array of Movie objects
-    def aggregate_list(list_name, country, result_Limit)
+    def aggregate_list(list_name, country, result_limit)
       case list_name
         # Build the appropriate URI based on the list name.
         when :box_office, :in_theaters, :opening, :upcoming
           uri = "#{RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
-                "&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
+                "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
         when :top_rentals, :current_releases, :new_releases, :upcoming_dvd
           # The API endpoint uses 'upcoming' for both DVD and cinema releases
           # Need to avoid this clash by using ':upcoming_dvd' as possible method param,
           # but change back when building the URI
           list_name = :upcoming if list_name == :upcoming_dvd
           uri = "#{RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
-                "&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
+                "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
       end
-
+      puts uri
       get_movie_list(uri)
     end
 
@@ -173,32 +173,21 @@ module WorthWatching
       return has_release_date && has_imdb_id
     end
 
-    # Retrieves a list of movies from the Rotten Tomatoes API, then aggregates the
-    # info for each one, return an array of Movie objects
+    # Retrieves a list of movies from the Rotten Tomatoes API, then aggregates
+    # info for each one
     #
     # @param uri [String] the Rotten Tomatoes API endpoint for the list
     # @return [Array] an array of Movie objects
     def get_movie_list(uri)
       response = JSON.parse(Typhoeus.get(uri).body)
       movie_list_response = response["movies"]
-      puts movie_list_response.length
+
       movie_list = movie_list_response.inject([]) do |list, movie|
         list << aggregate_movie(movie['id']) if enough_info?(movie)
         list
       end
 
-      Aggregator.clean_up(movie_list)
       return movie_list
-    end
-
-    # Removes movies from an array that do no have the required rating information
-    #
-    # @param movie_list [Array] the list to clean up
-    # @return [Array] the pruned list of movies
-    def self.clean_up(movie_list)
-      movie_list.delete_if do |movie|
-        movie.metacritic_rating == "No Rating"
-     end
     end
   end
 end
