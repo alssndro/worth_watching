@@ -37,7 +37,7 @@ The search results include the Rotten Tomatoes ID, which you can then use aggreg
 usual with the `aggregate_movie` method.
 
 If you would like to know why this is the case, or are just interested in how aggregation happens,
-[read here]() for some extra information.
+[read here](https://github.com/alessndro/worth_watching/wiki/F.A.Q) for some extra information.
 
 ## Installation
 
