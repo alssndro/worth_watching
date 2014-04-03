@@ -27,5 +27,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "json"
   spec.add_dependency "nokogiri"
-  spec.add_dependency "typhoeus"
+  spec.add_dependency "typhoeus", '~>0.6.7'
 end
