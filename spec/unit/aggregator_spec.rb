@@ -86,6 +86,33 @@ describe 'WorthWatching::Aggregator' do
         expect(reviews.first.link).to eq("http://www.villagevoice.com/2010-06-15/film/toys-are-us-in-toy-story-3/full/")
       end
     end
+
+    context "when the OMDB API has not IMDb rating info for a movie" do
+      before do
+        json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/captain_america_rt.json")
+        stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/771312513\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
+
+        json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/captain_america_omdb.json")
+        stub_request(:get, "http://www.omdbapi.com/?i=tt1843866").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
+
+        json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/captain_america_tmdb.json")
+        stub_request(:get, /api\.themoviedb\.org\/3\/movie\/tt1843866\?api_key\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
+
+        json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/captain_america_reviews_rt.json")
+        stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/771312513\/reviews\.json\?apikey\=.*&country=uk&page=1&page_limit=5&review_type=top_critic/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
+
+        json_response = File.read(File.dirname(__FILE__) + "/../support/html_responses/captain_america_mc.html")
+        stub_request(:get, "http://www.metacritic.com/search/movie/Captain+America:+The+Winter+Soldier/results").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
+
+        json_response = File.read(File.dirname(__FILE__) + "/../support/html_responses/captain_america_imdb.html")
+        stub_request(:get, "http://m.imdb.com/title/tt1843866").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
+      end
+
+      it "scrapes the rating directly from the movie's IMDb page" do
+        movie = aggregator.aggregate_movie("771312513")
+        expect(movie.imdb_rating).to eq(8.3)
+      end
+    end
   end
 
   describe "searching for movies" do

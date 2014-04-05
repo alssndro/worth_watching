@@ -16,9 +16,10 @@ module WorthWatching
     def initialize(rt_api_key, tmdb_api_key)
       @rt_api_key = rt_api_key
       @tmdb_api_key = tmdb_api_key
+      @movie = nil # the current movie being aggregated
     end
 
-    # Retrieve the details of a specific movie using its IMDB ID
+    # Retrieve the details of a specific movie using its Rotten Tomatoes ID
     #
     # @param rt_id [String] the Rotten Tomatoes ID of the movie
     # @return [Movie] a Movie object representing the movie
@@ -101,7 +102,11 @@ module WorthWatching
       omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}").body)
 
       if omdb_response["Response"] == "True"
-        @movie.imdb_rating = omdb_response["imdbRating"]
+        if omdb_response["imdbRating"] == "N/A"
+          scrape_imdb_rating
+        else
+          @movie.imdb_rating = omdb_response["imdbRating"]
+        end
       else
         @movie.imdb_rating = "Unavailable"
       end
@@ -123,6 +128,15 @@ module WorthWatching
 
       @movie.metacritic_rating = scraped_rating
       @movie.metacritic_url = metacritic_url
+    end
+
+    # Scrapes and sets the IMDb rating of the current movie from its IMDb page
+    def scrape_imdb_rating
+      imdb_url = "http://m.imdb.com/title/tt#{@movie.imdb_id}"
+
+      imdb_page = Nokogiri::HTML(Typhoeus.get(imdb_url).body)
+
+      @movie.imdb_rating = imdb_page.xpath("//*[@class = 'mobile-sprite yellow-star']").first.next_element.text.match(/[0-9]\.[0-9]/).to_s.to_f
     end
 
     # Updates the current movie's high resolution poster URL
