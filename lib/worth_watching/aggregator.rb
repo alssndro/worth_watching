@@ -99,7 +99,7 @@ module WorthWatching
 
     # Retrieves and updates the current movie's IMDb rating
     def retrieve_imdb_info
-      omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}").body)
+      omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}/").body)
 
       if omdb_response["Response"] == "True"
         if omdb_response["imdbRating"] == "N/A"
