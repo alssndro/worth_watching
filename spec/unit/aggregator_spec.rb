@@ -105,7 +105,7 @@ describe 'WorthWatching::Aggregator' do
         stub_request(:get, "http://www.metacritic.com/search/movie/Captain+America:+The+Winter+Soldier/results").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
 
         json_response = File.read(File.dirname(__FILE__) + "/../support/html_responses/captain_america_imdb.html")
-        stub_request(:get, "http://m.imdb.com/title/tt1843866").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
+        stub_request(:get, "http://m.imdb.com/title/tt1843866/").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
       end
 
       it "scrapes the rating directly from the movie's IMDb page" do
