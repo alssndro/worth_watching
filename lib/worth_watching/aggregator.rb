@@ -1,5 +1,4 @@
 require 'nokogiri'
-require 'open-uri'
 require 'typhoeus'
 require 'json'
 
