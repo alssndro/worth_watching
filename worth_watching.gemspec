@@ -6,13 +6,13 @@ require 'worth_watching/version'
 Gem::Specification.new do |spec|
   spec.name          = "worth_watching"
   spec.version       = WorthWatching::VERSION
-  spec.authors       = ["http://github.com/alessndro"]
+  spec.authors       = ["http://github.com/alssndro"]
   spec.email         = ["sandro@?.com"]
   spec.description   = %q{Retrieve the ratings of a movie from IMDB, Rotten
                           Tomatoes and Metacritic}
   spec.summary       = %q{Retrieve the ratings of a movie from IMDB, Rotten
                           Tomatoes and Metacritic}
-  spec.homepage      = "http://github.com/alessndro/worth_watching"
+  spec.homepage      = "http://github.com/alssndro/worth_watching"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
