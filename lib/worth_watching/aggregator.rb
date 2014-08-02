@@ -114,8 +114,8 @@ module WorthWatching
 
     # Retrieves and updates the current movie's Metacritic rating and URL
     def retrieve_metacritic_info
-      metacritic_page = Nokogiri::HTML(open("http://www.metacritic.com/search/"\
-                        "movie/#{CGI.escape(@movie.title)}/results"))
+      metacritic_page = Nokogiri::HTML(Typhoeus.get("http://www.metacritic.com/search/"\
+                                       "movie/#{CGI.escape(@movie.title)}/results").body)
 
       scraped_rating = metacritic_page.css('.first_result .metascore_w').text
       metacritic_url = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
