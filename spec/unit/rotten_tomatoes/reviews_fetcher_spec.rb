@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'spec_helper'
 
 describe "WorthWatching::RottenTomatoes::ReviewsFetcher" do
   before do

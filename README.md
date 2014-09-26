@@ -76,7 +76,8 @@ Pass the title of the movie, and the maximum number of results to return
 # Search for movies by title. Returns an array of hashes, each hash representing
 # a movie in the search result
 # Note that it returns the Rotten Tomatoes ID for each movie, which is vital to aggregation
-movie_aggregator.search_by_title("the godfather", 4)
+searcher = WorthWatching::RottenTomatoes::Searcher.new("rt_api_key")
+searcher.search_by_title("the godfather", 4)
 => [{:title=>"The Godfather", :rt_id=>"12911", :year=>"1972"},
 {:title=>"The Godfather, Part II", :rt_id=>"12926", :year=>"1974"},
 {:title=>"The Godfather, Part III", :rt_id=>"13476", :year=>"1990"},

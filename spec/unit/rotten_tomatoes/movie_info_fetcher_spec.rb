@@ -1,19 +1,17 @@
 require 'spec_helper'
-require 'json'
 
-describe "WorthWatching::RottenTomatoes::MovieParser" do
-  let (:api_response) do
-    JSON.parse(File.read(File.dirname(__FILE__) + "/../../support/json_responses/toy_story_rt.json"))
+describe "WorthWatching::RottenTomatoes::MovieInfoFetcher" do
+  before do
+    # Single movie RottenTomatoes
+    json_response = File.read(File.dirname(__FILE__) + "/../../support/json_responses/toy_story_rt.json")
+    stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/770672122\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
   end
 
-  it "returns a Movie object representing the movie in the response" do
-    movie = WorthWatching::RottenTomatoes::MovieParser.parse(api_response)
-    expect(movie).to be_a(WorthWatching::Movie)
-  end
+  let(:fetcher) { WorthWatching::RottenTomatoes::MovieInfoFetcher.new("rt_api_key") }
 
-  describe "the Movie object created after parsing" do
-    let (:movie) { movie = WorthWatching::RottenTomatoes::MovieParser.parse(api_response) }
-    
+  let(:movie) { fetcher.fetch_info("770672122") }
+
+  describe "the Movie object returned" do
     it "has the correct movie title" do
       expect(movie.title).to eq("Toy Story 3")
     end      
@@ -54,8 +52,12 @@ describe "WorthWatching::RottenTomatoes::MovieParser" do
       expect(movie.genre).to eq("Animation")
     end
 
-    it "has Rotten Tomato rating 99" do
-      expect(movie.rt_rating).to eq(99)
+    it "has a placeholder IMDb rating'" do
+      expect(movie.imdb_rating).to eq("Not retrieved")
+    end
+
+    it "has a placeholder Metacritic rating'" do
+      expect(movie.imdb_rating).to eq("Not retrieved")
     end
   end
 end

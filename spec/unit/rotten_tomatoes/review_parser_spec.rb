@@ -1,9 +1,9 @@
-require 'test_helper'
+require 'spec_helper'
 require 'json'
 
 describe "WorthWatching::RottenTomatoesReviewParser" do
   let (:review_response_hash) do
-    JSON.parse(File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_reviews_rt.json"))
+    JSON.parse(File.read(File.dirname(__FILE__) + "/../../support/json_responses/toy_story_reviews_rt.json"))
   end
 
   it "returns an array of Review objects representing the review in the response" do

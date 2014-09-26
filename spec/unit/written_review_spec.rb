@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'spec_helper'
 
 describe "WorthWatching::WrittenReview" do
   let (:review) do
