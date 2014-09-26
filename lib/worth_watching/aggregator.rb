@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'typhoeus'
 require 'json'
+require 'cgi'
 
 module WorthWatching
   class Aggregator
@@ -65,7 +66,7 @@ module WorthWatching
     # @return [Array, false] an array containing hashes represting each movie in the search results, or
     #   false if no results are found.
     def search_by_title(movie_title, result_limit)
-      uri = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?apikey=#{@rt_api_key}&q=#{CGI.escape(movie_title)}&page_limit=#{result_limit}"
+      uri = "http://api.rottentomatoes.com/api/public/v1.0/movies.json?apikey=#{@rt_api_key}&q=#{CGI::escape(movie_title)}&page_limit=#{result_limit}"
 
       response = JSON.parse(Typhoeus.get(uri).body)
 
