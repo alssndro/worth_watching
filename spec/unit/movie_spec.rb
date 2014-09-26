@@ -3,52 +3,31 @@ require 'json'
 
 describe "WorthWatching::Movie" do
   let(:movie) do
-    response_movie_hash = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_rt.json")
-    WorthWatching::Movie.new(JSON.parse(response_movie_hash))
+    WorthWatching::Movie.new("Toy Story 3",
+              "Pixar returns to their first success with Toy Story 3. The movie begins with Andy leaving for college and donating his beloved toys -- including Woody (Tom Hanks) and Buzz (Tim Allen) -- to a daycare. While the crew meets new friends, including Ken (Michael Keaton), they soon grow to hate their new surroundings and plan an escape. The film was directed by Lee Unkrich from a script co-authored by Little Miss Sunshine scribe Michael Arndt. ~ Perry Seibert, Rovi",
+              "Lee Unkrich",
+              "Animation",
+              "99",
+              "http://www.rottentomatoes.com/m/toy_story_3/",
+              "Tom Hanks, Tim Allen, Joan Cusack, Ned Beatty",
+              "0435761",
+              "http://www.imdb.com/title/tt0435761/",
+              Date.parse("2010-06-18"),
+              "770672122"
+              )
   end
 
   it "has a valid constructor" do
       expect(movie).to be_an_instance_of(WorthWatching::Movie)
   end
 
-  it "creates a printable string of cast members from an array of individual actors" do
-    expect(movie.cast).to eq("Tom Hanks, Tim Allen, Joan Cusack, Ned Beatty")
-  end
-
-  it "should have the title 'Toy Story 3" do
-    expect(movie.title).to eq("Toy Story 3")
-  end
-
-  it "should have correct plot'" do
-    expect(movie.plot).to eq("Pixar returns to their first success with Toy Story 3. The movie begins with Andy leaving for college and donating his beloved toys -- including Woody (Tom Hanks) and Buzz (Tim Allen) -- to a daycare. While the crew meets new friends, including Ken (Michael Keaton), they soon grow to hate their new surroundings and plan an escape. The film was directed by Lee Unkrich from a script co-authored by Little Miss Sunshine scribe Michael Arndt. ~ Perry Seibert, Rovi")
-  end
-
-  it "should have a link to RT page 'http://www.rottentomatoes.com/m/toy_story_3/'" do
-    expect(movie.rt_url).to eq("http://www.rottentomatoes.com/m/toy_story_3/")
-  end
-
-  it "should have imdb url 'http://www.imdb.com/title/tt0435761/" do
-    expect(movie.imdb_url).to eq("http://www.imdb.com/title/tt0435761/")
-  end
-
-  it "should have release date '2010-06-18'" do
-    expect(movie.release_date).to eq(Date.new(2010, 06, 18))
-  end
-
-  it "should have director 'Lee Unkrich'" do
-    expect(movie.director).to eq("Lee Unkrich")
-  end
-
-  it "should have genre 'Animation'" do
-    expect(movie.genre).to eq("Animation")
-  end
-
-  it "has a general summary" do
+  it "returns a general summary" do
     summary = "------------------------------------------------------------\nToy Story 3\n------------------------------------------------------------\nReleased: 18 Jun 2010\n------------------------------------------------------------\nPixar returns to their first success with Toy Story 3. The movie begins with Andy leaving for college and donating his beloved toys -- including Woody (Tom Hanks) and Buzz (Tim Allen) -- to a daycare. While the crew meets new friends, including Ken (Michael Keaton), they soon grow to hate their new surroundings and plan an escape. The film was directed by Lee Unkrich from a script co-authored by Little Miss Sunshine scribe Michael Arndt. ~ Perry Seibert, Rovi\n------------------------------------------------------------\nCast: Tom Hanks, Tim Allen, Joan Cusack, Ned Beatty\n------------------------------------------------------------\nRotten Tomatoes rating: 99\nIMDB rating: Not retrieved\nMetacritic rating: Not retrieved\n\n"
+
     expect(movie.summary).to eq(summary)
   end
 
-  it "has a rating summary" do
+  it "returns a rating summary" do
     summary = "Rotten Tomatoes rating: 99\nIMDB rating: Not retrieved\nMetacritic rating: Not retrieved\n"
     expect(movie.rating_summary).to eq(summary)
   end

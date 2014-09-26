@@ -11,7 +11,6 @@ module WorthWatching
     RT_API_BASE_URL = 'http://api.rottentomatoes.com/api/public/v1.0'
     TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
 
-    # Initialize a new Aggregator object to retrieve movie info
     def initialize(rt_api_key, tmdb_api_key)
       @rt_api_key = rt_api_key
       @tmdb_api_key = tmdb_api_key
@@ -26,7 +25,7 @@ module WorthWatching
       uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{@rt_api_key}"
       movie_hash = JSON.parse(Typhoeus.get(uri).body)
 
-      @movie = Movie.new(movie_hash)
+      @movie = RottenTomatoesMovieParser.parse(movie_hash)
       aggregate
     end
 
