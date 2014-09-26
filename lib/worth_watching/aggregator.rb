@@ -9,9 +9,6 @@ module WorthWatching
     attr_accessor :rt_api_key, :tmdb_api_key
     attr_reader :movie
 
-    RT_API_BASE_URL = 'http://api.rottentomatoes.com/api/public/v1.0'
-    TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
-
     def initialize(rt_api_key, tmdb_api_key)
       @rt_api_key = rt_api_key
       @tmdb_api_key = tmdb_api_key
@@ -23,11 +20,19 @@ module WorthWatching
     # @param rt_id [String] the Rotten Tomatoes ID of the movie
     # @return [Movie] a Movie object representing the movie
     def aggregate_movie(rt_id)
-      uri = "#{RT_API_BASE_URL}/movies/#{rt_id}.json?apikey=#{@rt_api_key}"
-      movie_hash = JSON.parse(Typhoeus.get(uri).body)
 
-      @movie = RottenTomatoesMovieParser.parse(movie_hash)
-      aggregate
+      # Get the basic movie info first using the RottenTomatoes API
+      @movie = RottenTomatoes::MovieInfoFetcher.fetch(rt_id, rt_api_key)
+
+      @movie.imdb_rating = IMDB::RatingFetcher.fetch(@movie.imdb_id)
+
+      metacritic_info = Metacritic::RatingFetcher.fetch(@movie.title)
+      @movie.metacritic_rating = metacritic_info[:metacritic_rating]
+      @movie.metacritic_url = metacritic_info[:metacritic_url]
+
+      @movie.poster = PosterFetcher.new(@tmdb_api_key).fetch(@movie.imdb_id)
+      @movie.reviews = ReviewsFetcher.new(@rt_api_key).fetch(@movie.rt_id)
+      @movie
     end
 
     # Retrieve a list of movies, then aggregate info for each one
@@ -44,7 +49,7 @@ module WorthWatching
         # Some enpoints use 'limit' to specify max results to return, some use 'page_limit'.
         # Pass both to make the code simpler
         when :box_office, :in_theaters, :opening, :upcoming
-          uri = "#{RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
+          uri = "#{WorthWatching::RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
                 "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
         when :top_rentals, :current_releases, :new_releases, :upcoming_dvd
 
@@ -52,7 +57,7 @@ module WorthWatching
           # Need to avoid this clash by using ':upcoming_dvd' as possible method param,
           # but change back when building the URI
           list_name = :upcoming if list_name == :upcoming_dvd
-          uri = "#{RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
+          uri = "#{WorthWatching::RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
                 "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
       end
 
@@ -83,83 +88,6 @@ module WorthWatching
     end
 
     private
-
-    # Aggregates extra info about @movie that cannot be derived directly from the
-    # Rotten Tomatoes API e.g IMDb/Metacritic rating, HQ posters
-    #
-    # @return [Movie] the movie with aggregated info completed
-    def aggregate
-      retrieve_imdb_info
-      retrieve_metacritic_info
-      get_poster
-      get_reviews
-      return @movie
-    end
-
-    # Retrieves and updates the current movie's IMDb rating
-    def retrieve_imdb_info
-      omdb_response = JSON.parse(Typhoeus.get("http://www.omdbapi.com/?i=tt#{@movie.imdb_id}").body)
-
-      if omdb_response["Response"] == "True"
-        if omdb_response["imdbRating"] == "N/A"
-          scrape_imdb_rating
-        else
-          @movie.imdb_rating = omdb_response["imdbRating"]
-        end
-      else
-        @movie.imdb_rating = "Unavailable"
-      end
-    end
-
-    # Retrieves and updates the current movie's Metacritic rating and URL
-    def retrieve_metacritic_info
-      metacritic_page = Nokogiri::HTML(Typhoeus.get("http://www.metacritic.com/search/"\
-                                       "movie/#{CGI.escape(@movie.title)}/results").body)
-
-      scraped_rating = metacritic_page.css('.first_result .metascore_w').text
-      metacritic_url = "http://www.metacritic.com#{metacritic_page.at_css('.first_result a').attr(:href)}"
-
-      # If attempt to scrape results in empty string, info must not be available
-      if scraped_rating == ""
-        scraped_rating = "No Rating"
-        metacritic_url = "No URL"
-      end
-
-      @movie.metacritic_rating = scraped_rating
-      @movie.metacritic_url = metacritic_url
-    end
-
-    # Scrapes and sets the IMDb rating of the current movie from its IMDb page
-    def scrape_imdb_rating
-      imdb_url = "http://m.imdb.com/title/tt#{@movie.imdb_id}/"
-
-      imdb_page = Nokogiri::HTML(Typhoeus.get(imdb_url).body)
-
-      @movie.imdb_rating = imdb_page.xpath("//*[@class = 'mobile-sprite yellow-star']").first.next_element.text.match(/[0-9]\.[0-9]/).to_s.to_f
-    end
-
-    # Updates the current movie's high resolution poster URL
-    def get_poster
-      uri = "#{TMDB_API_BASE_URL}/movie/tt#{@movie.imdb_id}?api_key=#{tmdb_api_key}"
-      movie_info = JSON.parse(Typhoeus.get(uri).body)
-
-      if movie_info.has_key?("poster_path")
-        @movie.poster = "http://cf2.imgobject.com/t/p/original" + movie_info["poster_path"]
-      else
-        @movie.poster = "No poster available"
-      end
-    end
-
-    # Retrieves and updates the current movie's reviews
-    def get_reviews
-      uri = "#{RT_API_BASE_URL}/movies/#{@movie.rt_id}/reviews.json?review_type=top_critic"\
-            "&page_limit=5&page=1&country=uk&apikey=#{@rt_api_key}"
-      review_response = JSON.parse(Typhoeus.get(uri).body)
-
-      review_list = RottenTomatoesReviewParser.parse(review_response)
-
-      @movie.reviews = review_list
-    end
 
     # Checks that a given movie has enough information available via API to aggregate
     # data. It MUST have an IMDb id and a release date.

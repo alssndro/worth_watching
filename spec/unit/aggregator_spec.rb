@@ -6,18 +6,23 @@ describe 'WorthWatching::Aggregator' do
 
   describe 'retrieving individual movie info' do
     before do
+      # Single movie RottenTomatoes
       json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_rt.json")
       stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/770672122\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
 
+      # Single movie OMDB
       json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_omdb.json")
       stub_request(:get, "http://www.omdbapi.com/?i=tt0435761").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
 
+      # Single movie TMDB
       json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_tmdb.json")
       stub_request(:get, /api\.themoviedb\.org\/3\/movie\/tt0435761\?api_key\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
 
+      # RottenTomatoes reviews
       json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_reviews_rt.json")
       stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/770672122\/reviews\.json\?apikey\=.*&country=uk&page=1&page_limit=5&review_type=top_critic/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
 
+      # Single movie MetaCritic
       json_response = File.read(File.dirname(__FILE__) + "/../support/html_responses/toy_story_mc.html")
       stub_request(:get, "http://www.metacritic.com/search/movie/Toy+Story+3/results").to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["text/html; charset=utf-8"]})
     end

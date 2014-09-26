@@ -2,8 +2,20 @@ require "worth_watching/version"
 require 'worth_watching/aggregator'
 require 'worth_watching/movie'
 require 'worth_watching/written_review'
-require 'worth_watching/rotten_tomatoes_movie_parser'
-require 'worth_watching/rotten_tomatoes_review_parser'
+
+require 'worth_watching/rotten_tomatoes/movie_parser'
+require 'worth_watching/rotten_tomatoes/review_parser'
+require 'worth_watching/rotten_tomatoes/reviews_fetcher'
+require 'worth_watching/rotten_tomatoes/movie_info_fetcher'
+
+require 'worth_watching/imdb/rating_fetcher'
+
+require 'worth_watching/metacritic/rating_fetcher'
+
+require 'worth_watching/poster_fetcher'
+require 'worth_watching/reviews_fetcher'
 
 module WorthWatching
+  RT_API_BASE_URL = 'http://api.rottentomatoes.com/api/public/v1.0'
+  TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
 end

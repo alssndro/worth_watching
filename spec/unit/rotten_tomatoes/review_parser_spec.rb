@@ -7,13 +7,13 @@ describe "WorthWatching::RottenTomatoesReviewParser" do
   end
 
   it "returns an array of Review objects representing the review in the response" do
-    reviews = WorthWatching::RottenTomatoesReviewParser.parse(review_response_hash)
+    reviews = WorthWatching::RottenTomatoes::ReviewParser.parse(review_response_hash)
     expect(reviews).to be_a(Array)
     reviews.each { |review| expect(review).to be_a(WorthWatching::WrittenReview) }
   end
 
   describe "the WrittenReview object created after parsing" do
-    let (:review) { WorthWatching::RottenTomatoesReviewParser.parse(review_response_hash).last }
+    let (:review) { WorthWatching::RottenTomatoes::ReviewParser.parse(review_response_hash).last }
     
     it "has an author" do
       expect(review.author).to eq("Ailsa Caine")

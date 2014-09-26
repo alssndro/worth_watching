@@ -1,18 +1,18 @@
 require 'test_helper'
 require 'json'
 
-describe "WorthWatching::RottenTomatoesMovieParser" do
+describe "WorthWatching::RottenTomatoes::MovieParser" do
   let (:api_response) do
     JSON.parse(File.read(File.dirname(__FILE__) + "/../support/json_responses/toy_story_rt.json"))
   end
 
   it "returns a Movie object representing the movie in the response" do
-    movie = WorthWatching::RottenTomatoesMovieParser.parse(api_response)
+    movie = WorthWatching::RottenTomatoes::MovieParser.parse(api_response)
     expect(movie).to be_a(WorthWatching::Movie)
   end
 
   describe "the Movie object created after parsing" do
-    let (:movie) { movie = WorthWatching::RottenTomatoesMovieParser.parse(api_response) }
+    let (:movie) { movie = WorthWatching::RottenTomatoes::MovieParser.parse(api_response) }
     it "has the correct movie title" do
       expect(movie.title).to eq("Toy Story 3")
     end      
