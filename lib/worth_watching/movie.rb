@@ -27,9 +27,9 @@ module WorthWatching
     # @return [String] the summary
     def summary
       divider = "-" * 60
-      "#{divider}\n#{@title}\n#{divider}\nReleased: " +
-      "#{@release_date.strftime("%d %b %Y")}\n#{divider}\n#{plot}\n#{divider}" +
-      "\nCast: #{@cast}\n#{divider}\n#{rating_summary}\n"
+      "#{divider}\n#{title}\n#{divider}\nReleased: " +
+      "#{release_date.strftime("%d %b %Y")}\n#{divider}\n#{plot}\n#{divider}" +
+      "\nCast: #{cast}\n#{divider}\n#{rating_summary}\n"
     end
 
     def rating_summary

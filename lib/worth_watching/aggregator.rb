@@ -153,13 +153,9 @@ module WorthWatching
     def get_reviews
       uri = "#{RT_API_BASE_URL}/movies/#{@movie.rt_id}/reviews.json?review_type=top_critic"\
             "&page_limit=5&page=1&country=uk&apikey=#{@rt_api_key}"
-      review_hash = JSON.parse(Typhoeus.get(uri).body)
+      review_response = JSON.parse(Typhoeus.get(uri).body)
 
-      review_list = []
-
-      review_hash["reviews"].each do |review|
-        review_list << WrittenReview.new(review)
-      end
+      review_list = RottenTomatoesReviewParser.parse(review_response)
 
       @movie.reviews = review_list
     end
