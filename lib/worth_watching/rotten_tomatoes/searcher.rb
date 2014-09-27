@@ -1,3 +1,7 @@
+require 'typhoeus'
+require 'json'
+require 'cgi'
+
 module WorthWatching
   module RottenTomatoes
     class Searcher

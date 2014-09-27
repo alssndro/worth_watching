@@ -5,7 +5,6 @@ module WorthWatching
       # Parses a JSON response of movie reviews from the Rotten Tomatoes API, returning
       # an array WrittenReview objects
       def self.parse(json_response)
-
         json_response["reviews"].map do |review_hash|
           author = review_hash["critic"]
           date = Date.parse(review_hash["date"])

@@ -1,3 +1,7 @@
+require 'typhoeus'
+require 'json'
+require 'nokogiri'
+
 module WorthWatching
   module IMDB
     class RatingFetcher
@@ -11,7 +15,7 @@ module WorthWatching
           if omdb_response["imdbRating"] == "N/A"
             scrape_imdb_rating(imdb_id)
           else
-            imdb_rating = omdb_response["imdbRating"]
+            imdb_rating = omdb_response["imdbRating"].to_f
           end
         else
           imdb_rating = "Unavailable"

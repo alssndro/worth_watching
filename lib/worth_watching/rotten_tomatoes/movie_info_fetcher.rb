@@ -1,3 +1,6 @@
+require 'typhoeus'
+require 'json'
+
 module WorthWatching
   module RottenTomatoes
     class MovieInfoFetcher

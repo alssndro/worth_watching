@@ -1,0 +1,2 @@
+class InsufficientDataError < Exception
+end

@@ -5,21 +5,26 @@ module WorthWatching
       # Parses a single movie JSON response from the Rotten Tomatoes API, returning
       # a Movie object containing the movie's details
       def self.parse(json_response)
-        title = json_response['title']
-        plot = json_response['synopsis']
-        director = json_response['abridged_directors'][0]['name']
-        genre = json_response['genres'][0]
-        rt_rating = json_response['ratings']['critics_score']
-        rt_url = json_response['links']['alternate']
+        movie_args = {}
 
-        cast = build_cast_list(json_response['abridged_cast'])
-        imdb_id = json_response['alternate_ids']['imdb']
-        imdb_url = "http://www.imdb.com/title/tt#{imdb_id}/"
-        release_date = Date.parse(json_response['release_dates']['theater'])
-        rt_id = json_response['id'].to_s
+        movie_args[:title] = json_response['title']
+        movie_args[:plot] = json_response['synopsis']
+        movie_args[:director] = json_response['abridged_directors'][0]['name'] if json_response.has_key?('abridged_directors')
+        movie_args[:genre] = json_response['genres'][0] if json_response.has_key?('genres')
 
-        Movie.new(title, plot, director, genre, rt_rating, rt_url, cast,
-                    imdb_id, imdb_url, release_date, rt_id)
+        movie_args[:rt_rating] = json_response['ratings']['critics_score']
+        movie_args[:rt_url] = json_response['links']['alternate']
+
+        movie_args[:cast] = build_cast_list(json_response['abridged_cast'])
+
+        imdb_id = json_response['alternate_ids']['imdb'] if json_response.has_key?('alternate_ids')
+        movie_args[:imdb_id] = imdb_id
+
+        movie_args[:imdb_url] = "http://www.imdb.com/title/tt#{imdb_id}/"
+        movie_args[:release_date] = Date.parse(json_response['release_dates']['theater'])
+        movie_args[:rt_id] = json_response['id'].to_s
+
+        Movie.new(movie_args)
       end
 
       private
@@ -39,3 +44,4 @@ module WorthWatching
     end
   end
 end
+

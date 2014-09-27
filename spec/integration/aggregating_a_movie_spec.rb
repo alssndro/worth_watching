@@ -1,7 +1,6 @@
 require 'spec_helper'
 
-describe 'WorthWatching::Aggregator' do
-
+describe "Aggregating a movie" do
   let(:aggregator) { WorthWatching::Aggregator.new("rt_api_key", "tmdb_api_key") }
 
   describe 'retrieving individual movie info' do
@@ -40,7 +39,7 @@ describe 'WorthWatching::Aggregator' do
     end
 
     it "should have IMDB rating of 8.5" do
-      expect(movie.imdb_rating).to eq("8.5")
+      expect(movie.imdb_rating).to eq(8.5)
     end
 
     it "should have IMDB url 'http://www.imdb.com/title/tt0435761/'" do
@@ -48,7 +47,7 @@ describe 'WorthWatching::Aggregator' do
     end
 
     it "should have metacritic rating of 92" do
-      expect(movie.metacritic_rating).to eq("92")
+      expect(movie.metacritic_rating).to eq(92)
     end
 
     it "should have metacritic url 'http://www.metacritic.com/movie/toy-story-3'" do
@@ -92,7 +91,7 @@ describe 'WorthWatching::Aggregator' do
       end
     end
 
-    context "when the OMDB API has not IMDb rating info for a movie" do
+    context "when the OMDB API has no IMDb rating info for a movie" do
       before do
         json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/captain_america_rt.json")
         stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/771312513\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
@@ -117,6 +116,19 @@ describe 'WorthWatching::Aggregator' do
         movie = aggregator.aggregate_movie("771312513")
         expect(movie.imdb_rating).to eq(8.3)
       end
+    end
+  end
+
+  context "when the Rotten Tomatoes API does not return the IMDb ID of the movie" do
+    before do
+      # Single movie RottenTomatoes, with insufficient data
+      json_response = File.read(File.dirname(__FILE__) + "/../support/json_responses/a_movie_with_little_info_rt.json")
+      stub_request(:get, /api\.rottentomatoes\.com\/api\/public\/v1\.0\/movies\/11111111\.json\?apikey\=.*/).to_return(:status => 200, :body => json_response,:headers => {"content-type"=>["application/json; charset=utf-8"]})
+    end
+
+    it "raises an exception" do
+      expect { aggregator.aggregate_movie("11111111") }.to raise_exception(InsufficientDataError,
+                                                                           "No IMDb ID present, can't aggregate")
     end
   end
 end

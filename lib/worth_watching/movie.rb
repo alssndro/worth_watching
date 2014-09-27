@@ -4,19 +4,18 @@ module WorthWatching
                   :imdb_rating, :imdb_url, :metacritic_rating, :metacritic_url,
                   :release_date, :poster, :rt_id, :imdb_id, :reviews
 
-    def initialize(title, plot, director, genre, rt_rating, rt_url, cast, imdb_id, 
-                  imdb_url, release_date, rt_id)
-      @title = title
-      @plot = plot
-      @director = director
-      @genre = genre
-      @rt_rating = rt_rating
-      @rt_url = rt_url
-      @cast = cast
-      @imdb_id = imdb_id
-      @imdb_url = imdb_url
-      @release_date = release_date
-      @rt_id = rt_id
+    def initialize(movie_args)
+      @title = movie_args[:title]
+      @plot = movie_args[:plot]
+      @director = movie_args[:director]
+      @genre = movie_args[:genre]
+      @rt_rating = movie_args[:rt_rating]
+      @rt_url = movie_args[:rt_url]
+      @cast = movie_args[:cast]
+      @imdb_id = movie_args[:imdb_id]
+      @imdb_url = movie_args[:imdb_url]
+      @release_date = movie_args[:release_date]
+      @rt_id = movie_args[:rt_id]
 
       @imdb_rating = "Not retrieved"
       @metacritic_rating = "Not retrieved"

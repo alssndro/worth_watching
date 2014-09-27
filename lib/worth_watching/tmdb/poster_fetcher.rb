@@ -1,3 +1,6 @@
+require 'typhoeus'
+require 'json'
+
 module WorthWatching
   module TMDB
     TMDB_API_BASE_URL = 'http://api.themoviedb.org/3'
