@@ -24,7 +24,7 @@ module WorthWatching
           # Some endpoints use 'limit' to specify max results to return, some use 'page_limit'.
           # Pass both to make the code simpler
           when :box_office, :in_theaters, :opening, :upcoming
-            uri = "#{WorthWatching::RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
+            uri = "#{RottenTomatoes::RT_API_BASE_URL}/lists/movies/#{list_name.to_s}.json?limit=#{result_limit}"\
                   "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
           when :top_rentals, :current_releases, :new_releases, :upcoming_dvd
 
@@ -32,7 +32,7 @@ module WorthWatching
             # Need to avoid this clash by using ':upcoming_dvd' as possible method param,
             # but change back when building the URI
             list_name = :upcoming if list_name == :upcoming_dvd
-            uri = "#{WorthWatching::RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
+            uri = "#{RottenTomatoes::RT_API_BASE_URL}/lists/dvds/#{list_name.to_s}.json?limit=#{result_limit}"\
                   "&page_limit=#{result_limit}&page=1&country=#{country.to_s}&apikey=#{@rt_api_key}"
         end
 
