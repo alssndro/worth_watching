@@ -213,8 +213,7 @@ Rating: 4/5"
 
 ### Aggregating a list of movies
 The Rotten Tomatoes API supports a number of pre-defined lists for both cinema/theater
-releases and DVD releases. For example, if you want to aggregate info for each movie
-on the Box Office list (best performing cinema releases), WorthWatching supports this.
+releases and DVD releases.
 
 Pass the name of the list you would like to process (as a Symbol), the country code
 (ISO 3166-1 alpha-2) of the country you would like info to be localised to (as a Symbol),
@@ -234,29 +233,36 @@ ticket sales
 - ``:new_releases`` - new DVD releases
 - ``:upcoming_dvd`` - upcoming DVD releases
 
-**Be careful using this feature! Since WorthWatching will aggregate info for each movie on the list,
-there is the potential to make a significant number of API calls through repeated use.**
-
 **The Rotten Tomatoes API
 does have rate limits (as of March 2014: 5 calls a second, 10,000 calls a day)**
 
-
 ```ruby
+# Create a new fetcher using your API key
+list_fetcher = WorthWatching::RottenTomatoes::MovieListFetcher.new("rt_api_key")
 
-# Aggregate the top 4 box office movies in the UK
-top_movies = movie_aggregator.aggregate_list(:box_office, :uk, 4)
+# Get the top 4 box office movies in the UK
+list_fetcher.fetch_list(:box_office, :uk, 4)
+=> [{:title=>"A Most Wanted Man", :rt_id=>"771314084", :year=>"2014", :rt_rating=>91},
+ {:title=>"Before I Go to Sleep", :rt_id=>"771367646", :year=>"2014", :rt_rating=>58},
+ {:title=>"Let's Be Cops", :rt_id=>"771372963", :year=>"2014", :rt_rating=>20},
+ {:title=>"Magic in the Moonlight", :rt_id=>"771367659", :year=>"2014", :rt_rating=>51}]
 
 # Or the top 6 releases on DVD in the US
-top_dvds = movie_aggregator.aggregate_list(:top_rentals, :us, 6)
+top_dvds = list_fetcher.fetch_list(:top_rentals, :us, 6)
+=> [{:title=>"Captain America: The Winter Soldier", :rt_id=>"771312513", :year=>"2014", :rt_rating=>89},
+ {:title=>"The Amazing Spider-Man 2", :rt_id=>"771249926", :year=>"2014", :rt_rating=>53},
+ {:title=>"Godzilla", :rt_id=>"771225175", :year=>"2014", :rt_rating=>73},
+ {:title=>"Neighbors", :rt_id=>"771308254", :year=>"2014", :rt_rating=>73},
+ {:title=>"Divergent", :rt_id=>"771315918", :year=>"2014", :rt_rating=>41},
+ {:title=>"Noah", :rt_id=>"771305170", :year=>"2014", :rt_rating=>77}]
 
-# The above list-based methods return an array of Movie objects
-number_1_movie = top_movies.first
+# The above list-based methods return an array of hashes, each representing a result
+number_1_dvd = top_dvds.first
+=> {:title=>"Captain America: The Winter Soldier", :rt_id=>"771312513", :year=>"2014", :rt_rating=>89}
 
-number_1_movie.title
-=> "Captain America: The Winter Soldier"
+# Use the rt_id (Rotten Tomato ID) to subsequently aggregate movie info
+aggregated_results = top_dvds.map { |movie| aggregator.aggregate_movie(movie[:rt_id]) }
 
-number_1_movie.metacritic_rating
-=> 71
 ```
 
 ### Why is the returned list empty?
