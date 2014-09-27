@@ -264,23 +264,3 @@ number_1_dvd = top_dvds.first
 aggregated_results = top_dvds.map { |movie| aggregator.aggregate_movie(movie[:rt_id]) }
 
 ```
-
-### Why is the returned list empty?
-
-This may be because some movies do not have the minimum amount of data available
-in order to aggregate their rating info, and are therefore 'discarded' during the aggregation
-process.
-
-If a movie's IMDb ID is not available through the Rotten Tomatoes API, rating info
-cannot be retrieved.
-
-During testing I also noticed that movies with no available release date were likely
-to be very obscure and not have any rating info associated with them either. This is
-the other criteria for a movie being discarded.
-
-This only tends to happen with very small release independent films, particularly foreign ones.
-
-The lists where the above is most likely are ``:upcoming`` and ``:upcoming_dvd``, since they
-contain movies that probably don't have any rating info yet, as they haven't been released.
-
-The opposite is true for lists like ``:box_office`` and ``top_rentals``.
